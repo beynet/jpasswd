@@ -16,6 +16,7 @@ public class ConfigTest {
     @Test
     public void t() throws Exception {
         String test ="this is a test to be encrypted";
+        
         final byte[] encrypt = Config.getInstance().encrypt(test.getBytes("UTF-8"));
         final byte[] decrypted = Config.getInstance().decrypt(encrypt);
         assertThat(new String(decrypted,"UTF-8"),is(test));
