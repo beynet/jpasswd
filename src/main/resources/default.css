@@ -1,0 +1,12 @@
+.root {
+    -fx-font-family: "Arial";
+}
+
+.passwdlist {
+    -fx-border-color: darkred;
+}
+.mainpane {
+}
+.content{
+    -fx-border-color: yellow;
+}
