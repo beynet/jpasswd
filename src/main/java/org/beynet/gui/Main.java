@@ -1,31 +1,68 @@
 package org.beynet.gui;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.beynet.model.Config;
 import org.beynet.model.password.WebLoginAndPassword;
 import org.beynet.model.store.PasswordStore;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class Main extends Application{
+public class Main extends Application {
+
+    private static Path savePath;
     public static void main(String...args) {
+        if (args.length==0) {
+            Path userHome = Paths.get((String) System.getProperty("user.home"));
+            savePath = userHome.resolve(".jpasswd");
+        }
+        else {
+            Path userHome = Paths.get(args[0]);
+            if (!Files.exists(userHome)) throw new RuntimeException("path "+userHome+" does not exist");
+            savePath = userHome.resolve(".jpasswd");
+        }
         launch(args);
     }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        currentStage = primaryStage;
-        currentStage.setOnCloseRequest((t)->quitApp());
-        setTitle();
 
+    private void createAskPassword(String ...args) {
+
+
+
+        Group group  = new Group();
+
+        HBox pane = new HBox();
+        group.getChildren().add(pane);
+
+        final TextField password = new TextField();
+        final Label passwordLabel = new Label("password :");
+        final Button ok = new Button("ok");
+
+        ok.setOnAction(event -> {
+            if (password.getText()!=null && !password.getText().isEmpty()) {
+                Config.initConfig(password.getText(),savePath);
+                createMainScene();
+            }
+        });
+        pane.getChildren().addAll(passwordLabel,password,ok);
+
+        currentScene = new Scene(group);
+        currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
+        currentStage.setScene(currentScene);
+    }
+
+    private void createMainScene() {
         Group group  = new Group();
 
         BorderPane pane = new BorderPane();
@@ -42,9 +79,19 @@ public class Main extends Application{
         currentScene = new Scene(group, 640, 480);
         currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         currentStage.setScene(currentScene);
+        passwordList.setPrefWidth(currentStage.getWidth()*0.33);
         currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
             passwordList.setPrefWidth(newValue.doubleValue() * 0.33);
         });
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        currentStage = primaryStage;
+        currentStage.setOnCloseRequest((t)->quitApp());
+        setTitle();
+
+        createAskPassword();
         currentStage.show();
     }
 

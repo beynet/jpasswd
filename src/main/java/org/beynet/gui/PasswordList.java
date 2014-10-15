@@ -1,12 +1,8 @@
 package org.beynet.gui;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.GridPane;
-import javafx.scene.text.Text;
 import org.beynet.model.Config;
 import org.beynet.model.password.Password;
 import org.beynet.model.store.*;
@@ -23,9 +19,10 @@ import java.util.function.Consumer;
 public class PasswordList extends ListView<Password> implements Observer,PasswordStoreEventVisitor {
 
 
-    public PasswordList(Consumer<Password> passwordChange) {
-        this.passwordChange = passwordChange;
-        elements = new HashMap<>();
+    public PasswordList(Consumer<Password> selectedPasswordChange) {
+        this.selectedPasswordChange = selectedPasswordChange;
+        elements = Config.getInstance().getPasswordStore().getCopie();
+        getItems().addAll(elements.values());
         setCellFactory(param -> new PasswordCell());
         Config.getInstance().getPasswordStore().addObserver(this);
         setOnKeyPressed(e->{
@@ -38,7 +35,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
             }
         });
         getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            passwordChange.accept(newValue);
+            this.selectedPasswordChange.accept(newValue);
         });
     }
 
@@ -75,5 +72,5 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     }
 
     Map<String,Password> elements;
-    private final Consumer<Password> passwordChange;
+    private final Consumer<Password> selectedPasswordChange;
 }

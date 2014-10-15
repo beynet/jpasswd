@@ -1,5 +1,6 @@
 package org.beynet.model.store;
 
+import org.beynet.model.Config;
 import org.beynet.model.password.Password;
 
 import java.io.*;
@@ -64,17 +65,36 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
     public void save(Path targetFile) throws IOException {
+
         synchronized (passwords) {
-            try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(Files.newOutputStream(targetFile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE))) {
-                objectOutputStream.writeObject(this);
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(result);
+            objectOutputStream.writeObject(this);
+            objectOutputStream.close();
+            try (OutputStream os = Files.newOutputStream(targetFile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)) {
+                try {
+                    os.write(Config.getInstance().encrypt(result.toByteArray()));
+                }catch(RuntimeException e) {
+                    throw new IOException(e);
+                }
             }
         }
     }
 
-    public static PasswordStore fromFile(Path fromFile) throws IOException, ClassNotFoundException {
-        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(fromFile))) {
+    public static PasswordStore fromFile(Path fromFile,Config config) throws IOException, ClassNotFoundException {
+        final byte[] bytes = config.decrypt(Files.readAllBytes(fromFile));
+
+        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
             return (PasswordStore)ois.readObject();
         }
+    }
+
+    public static PasswordStore fromFile(Path fromFile) throws IOException, ClassNotFoundException {
+        return fromFile(fromFile,Config.getInstance());
+    }
+
+    public Map<String,Password> getCopie() {
+        return new HashMap<>(passwords);
     }
 
     protected final Map<String,Password> passwords;
