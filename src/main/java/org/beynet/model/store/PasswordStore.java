@@ -2,6 +2,8 @@ package org.beynet.model.store;
 
 import org.beynet.model.Config;
 import org.beynet.model.password.Password;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -68,9 +70,8 @@ public class PasswordStore extends Observable implements Serializable {
 
         synchronized (passwords) {
             ByteArrayOutputStream result = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(result);
-            objectOutputStream.writeObject(this);
-            objectOutputStream.close();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writerWithType(new TypeReference<HashMap<String, Password>>(){}).writeValue(result, passwords);
             try (OutputStream os = Files.newOutputStream(targetFile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)) {
                 try {
                     os.write(Config.getInstance().encrypt(result.toByteArray()));
@@ -82,21 +83,25 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
     public static PasswordStore fromFile(Path fromFile,Config config) throws IOException, ClassNotFoundException {
+        PasswordStore result = new PasswordStore();
+        ObjectMapper mapper = new ObjectMapper();
         final byte[] bytes = config.decrypt(Files.readAllBytes(fromFile));
+        result.passwords = mapper.readValue(new ByteArrayInputStream(bytes),new TypeReference<HashMap<String, Password>>(){});
 
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
-            return (PasswordStore)ois.readObject();
-        }
+        return result;
     }
 
     public static PasswordStore fromFile(Path fromFile) throws IOException, ClassNotFoundException {
         return fromFile(fromFile,Config.getInstance());
     }
 
-    public Map<String,Password> getCopie() {
-        return new HashMap<>(passwords);
+    public void sendAllPasswords(Observer suscriber) {
+        synchronized (passwords) {
+            for (Password password : passwords.values()) {
+                suscriber.update(this,new PasswordModifiedOrCreated(password));
+            }
+        }
     }
 
-    protected final Map<String,Password> passwords;
-
+    protected  Map<String,Password> passwords;
 }

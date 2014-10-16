@@ -1,5 +1,7 @@
 package org.beynet.model.password;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import java.io.Serializable;
 
 /**
@@ -9,6 +11,12 @@ public class PasswordString implements Serializable {
 
     private static final long serialVersionUID = -6711292708352750467L;
 
+    /**
+     * used by jackson
+     */
+    private PasswordString() {
+
+    }
     public PasswordString(String password) {
         this.password = password;
     }
@@ -17,6 +25,7 @@ public class PasswordString implements Serializable {
         return password;
     }
 
+    @JsonIgnore
     public String getHiddenPassword() {
         return "*****";
     }
@@ -28,8 +37,6 @@ public class PasswordString implements Serializable {
     public void accept(PasswordVisitor p) {
         p.visit(this);
     }
-
-    private String password;
 
     @Override
     public boolean equals(Object o) {
@@ -47,4 +54,6 @@ public class PasswordString implements Serializable {
     public int hashCode() {
         return password != null ? password.hashCode() : 0;
     }
+
+    private String password;
 }

@@ -4,11 +4,15 @@ import javafx.application.Platform;
 import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import org.beynet.model.Config;
-import org.beynet.model.password.*;
-import org.beynet.model.store.*;
+import org.beynet.controller.Controller;
+import org.beynet.model.password.Password;
+import org.beynet.model.password.PasswordString;
+import org.beynet.model.password.WebLoginAndPassword;
+import org.beynet.model.store.PasswordModifiedOrCreated;
+import org.beynet.model.store.PasswordRemoved;
+import org.beynet.model.store.PasswordStoreEvent;
+import org.beynet.model.store.PasswordStoreEventVisitor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,16 +28,15 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
 
     public PasswordList(Stage parent,Consumer<Password> selectedPasswordChange) {
         this.selectedPasswordChange = selectedPasswordChange;
-        elements = Config.getInstance().getPasswordStore().getCopie();
-        getItems().addAll(elements.values());
+        elements = new HashMap<>();
         setCellFactory(param -> new PasswordCell());
-        Config.getInstance().getPasswordStore().addObserver(this);
+        Controller.suscribeToPassword(this);
         setOnKeyPressed(e->{
             if (KeyCode.DELETE.equals(e.getCode())) {
                 int selectedIndex = getSelectionModel().getSelectedIndex();
                 if (selectedIndex>=0) {
                     Password p = getItems().get(selectedIndex);
-                    Config.getInstance().getPasswordStore().removePassword(p.getId());
+                    Controller.notifyPasswordRemoved(p.getId());
                 }
             }
         });

@@ -8,10 +8,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import org.beynet.model.Config;
-import org.beynet.model.password.WebLoginAndPassword;
+import org.beynet.controller.Controller;
 
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +46,7 @@ public class Main extends Application {
 
         ok.setOnAction(event -> {
             if (password.getText()!=null && !password.getText().isEmpty()) {
-                Config.initConfig(password.getText(),savePath);
+                Controller.initConfig(password.getText(), savePath);
                 createMainScene();
             }
         });
@@ -149,11 +147,6 @@ public class Main extends Application {
     private void quitAppFromMenu() {
         System.out.println("exit with menu");
         quitApplication();
-    }
-
-    private void createTest() {
-        WebLoginAndPassword web = new WebLoginAndPassword(URI.create("http://fake-uri.fake"),"login","password");
-        Config.getInstance().getPasswordStore().savePassword(web);
     }
 
     public static void quitApplication() {

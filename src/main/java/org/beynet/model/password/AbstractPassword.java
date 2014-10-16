@@ -5,6 +5,7 @@ import java.util.UUID;
 /**
  * Created by beynet on 13/10/2014.
  */
+
 public abstract class AbstractPassword implements Password {
 
 

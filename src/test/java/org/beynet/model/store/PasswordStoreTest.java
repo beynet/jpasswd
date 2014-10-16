@@ -2,6 +2,9 @@ package org.beynet.model.store;
 
 import org.beynet.model.password.Password;
 import org.beynet.model.password.WebLoginAndPassword;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -34,6 +38,8 @@ public class PasswordStoreTest extends RootTest {
             if (temporaryFile!=null && Files.exists(temporaryFile)) Files.delete(temporaryFile);
         }
     }
+
+
 
     /**
      * test that password added on remote is added on local store

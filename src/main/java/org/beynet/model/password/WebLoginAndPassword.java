@@ -6,6 +6,12 @@ import java.net.URI;
  * Created by beynet on 13/10/2014.
  */
 public class WebLoginAndPassword extends AbstractPassword implements Password {
+    /**
+     * used by json parser
+     */
+    private WebLoginAndPassword() {
+
+    }
     public WebLoginAndPassword(URI uri,String login,String password) throws IllegalArgumentException {
         super();
         if (uri==null) throw new IllegalArgumentException("uri must not be null");
@@ -91,7 +97,7 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         return password;
     }
 
-    private final URI            uri;
-    private final String         login;
-    private final PasswordString password;
+    private  URI            uri;
+    private  String         login;
+    private  PasswordString password;
 }

@@ -2,13 +2,11 @@ package org.beynet.gui;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import org.beynet.model.Config;
-import org.beynet.model.password.Password;
+import org.beynet.controller.Controller;
 import org.beynet.model.password.WebLoginAndPassword;
 
 import java.net.URI;
@@ -73,10 +71,10 @@ public class CreateOrModifyWebSitePassword extends Dialog {
 
             WebLoginAndPassword newP = new WebLoginAndPassword(uriCreated,login.getText(),passwordT.getText());
             if (this.password==null) {
-                Config.getInstance().getPasswordStore().savePassword(newP);
+                Controller.notifyPasswordModified(newP);
             }
             else {
-                Config.getInstance().getPasswordStore().savePassword(this.password.refresh(newP));
+                Controller.notifyPasswordModified(this.password.refresh(newP));
             }
             close();
         });
