@@ -7,7 +7,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import org.beynet.model.Config;
-import org.beynet.model.password.Password;
+import org.beynet.model.password.*;
 import org.beynet.model.store.*;
 
 import java.util.HashMap;
@@ -41,13 +41,22 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
             this.selectedPasswordChange.accept(newValue);
         });
         setOnMouseClicked(mouseEvent->{
-                if(mouseEvent.getButton().equals(MouseButton.PRIMARY)){
-                    if(mouseEvent.getClickCount() == 2){
-                        int selectedIndex = getSelectionModel().getSelectedIndex();
-                        if (selectedIndex>=0) {
-                            Password p = getItems().get(selectedIndex);
-                            new CreateOrModifyWebSitePassword(parent, (org.beynet.model.password.WebLoginAndPassword) p).show();
-                        }
+                if(mouseEvent.getButton().equals(MouseButton.PRIMARY)) if (mouseEvent.getClickCount() == 2) {
+                    int selectedIndex = getSelectionModel().getSelectedIndex();
+                    if (selectedIndex >= 0) {
+                        Password p = getItems().get(selectedIndex);
+                        p.accept(new org.beynet.model.password.PasswordVisitor() {
+                            @Override
+                            public void visit(WebLoginAndPassword t) {
+                                new CreateOrModifyWebSitePassword(parent, (WebLoginAndPassword) p).show();
+                            }
+
+                            @Override
+                            public void visit(PasswordString s) {
+
+                            }
+                        });
+
                     }
                 }
             }

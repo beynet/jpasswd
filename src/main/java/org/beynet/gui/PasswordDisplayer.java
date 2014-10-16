@@ -1,11 +1,9 @@
 package org.beynet.gui;
 
-import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import org.beynet.model.password.PasswordString;
 import org.beynet.model.password.WebLoginAndPassword;
@@ -13,8 +11,8 @@ import org.beynet.model.password.WebLoginAndPassword;
 /**
  * Created by beynet on 13/10/2014.
  */
-public class PasswordVisitor implements org.beynet.model.password.PasswordVisitor {
-    PasswordVisitor(GridPane p) {
+public class PasswordDisplayer implements org.beynet.model.password.PasswordVisitor {
+    PasswordDisplayer(GridPane p) {
         pane = p;
     }
 
@@ -60,6 +58,6 @@ public class PasswordVisitor implements org.beynet.model.password.PasswordVisito
 
     GridPane pane;
 
-    private static final Image eye = new Image(PasswordVisitor.class.getResourceAsStream("/eye.png"));
-    private static final Image eyeHidden = new Image(PasswordVisitor.class.getResourceAsStream("/eye-hidden.png"));
+    private static final Image eye = new Image(PasswordDisplayer.class.getResourceAsStream("/eye.png"));
+    private static final Image eyeHidden = new Image(PasswordDisplayer.class.getResourceAsStream("/eye-hidden.png"));
 }

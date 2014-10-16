@@ -1,8 +1,6 @@
 package org.beynet.gui;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -12,7 +10,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.beynet.model.Config;
 import org.beynet.model.password.WebLoginAndPassword;
-import org.beynet.model.store.PasswordStore;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -106,7 +103,7 @@ public class Main extends Application {
         passwordList = new PasswordList(this.currentStage,newPasswd->{
             passwordContentPane.getChildren().clear();
             if (newPasswd!=null) {
-                newPasswd.accept(new PasswordVisitor(passwordContentPane));
+                newPasswd.accept(new PasswordDisplayer(passwordContentPane));
             }
         });
         passwordList.getStyleClass().add(Styles.PASSWD_LIST);
