@@ -103,20 +103,20 @@ public class Main extends Application {
         // to refresh passwordContentPane when selected passw has changed
         // --------------------------------------------------------------
 
-        passwordList = new PasswordList(newPasswd->{
+        passwordList = new PasswordList(this.currentStage,newPasswd->{
             passwordContentPane.getChildren().clear();
             if (newPasswd!=null) {
                 newPasswd.accept(new PasswordVisitor(passwordContentPane));
             }
         });
-        passwordList.getStyleClass().add("passwdlist");
+        passwordList.getStyleClass().add(Styles.PASSWD_LIST);
         passwordList.setPrefWidth(currentStage.getWidth() * 0.33);
         pane.setLeft(passwordList);
     }
 
     private void addPasswordContent(BorderPane pane) {
         passwordContentPane = new GridPane();
-        passwordContentPane.getStyleClass().add("content");
+        passwordContentPane.getStyleClass().add(Styles.PASSWORD_CONTENT);
         pane.setCenter(passwordContentPane);
     }
 
@@ -129,13 +129,16 @@ public class Main extends Application {
         menuBar.getMenus().add(files);
 
         // files menu
-        MenuItem exit = new MenuItem("exit");
+        MenuItem exit = new MenuItem("Exit");
         exit.setOnAction(t -> quitAppFromMenu());
 
-        MenuItem test = new MenuItem("test");
-        test.setOnAction(t -> createTest());
+        MenuItem newWebSite = new MenuItem("Add Web Site");
+        newWebSite.setOnAction(t -> new CreateOrModifyWebSitePassword(currentStage).show());
 
-        files.getItems().addAll(test,exit);
+        MenuItem test = new MenuItem("test");
+        test.setOnAction(t -> new Alert(currentStage,"attention").show());
+
+        files.getItems().addAll(test,newWebSite,exit);
     }
 
     private void setTitle() {

@@ -11,7 +11,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by beynet on 15/10/2014.
  */
-public class ConfigTest {
+public class ConfigTest extends RootTest{
 
     @Test
     public void t() throws Exception {

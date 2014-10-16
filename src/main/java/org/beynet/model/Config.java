@@ -80,7 +80,7 @@ public class Config implements Observer {
             byte[] encrypted = cipher.doFinal(from);
 
             return encrypted;
-        }catch(Exception e) {
+        } catch(Exception e) {
             throw new RuntimeException("unable to encrypt",e);
         }
     }

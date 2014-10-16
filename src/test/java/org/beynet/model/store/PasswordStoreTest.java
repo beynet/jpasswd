@@ -18,7 +18,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by beynet on 15/10/2014.
  */
-public class PasswordStoreTest {
+public class PasswordStoreTest extends RootTest {
 
     private Password createTestPassword() {
         return new WebLoginAndPassword(URI.create("http://fake-uri.fake"),"login","password");

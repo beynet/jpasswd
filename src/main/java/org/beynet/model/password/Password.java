@@ -20,6 +20,22 @@ public interface Password extends Serializable {
      */
     public String getId();
 
+    /**
+     * update current password with values provided by p.
+     * current password modified date MUST be modified
+     * @param p
+     */
+    /**
+     *
+     * @param newValues
+     * @return a copy of current password (ie with same id) but with
+     * <ul>
+     *     <li>getModified date changed</li>
+     *     <li>copy.getId().equals(current.getId())</li>
+     * </ul>
+     */
+    public Password refresh(Password newValues);
+
 
     public void accept(PasswordVisitor v);
 }

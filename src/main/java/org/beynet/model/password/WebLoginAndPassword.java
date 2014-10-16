@@ -15,6 +15,22 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         this.login    = login ;
         this.password = new PasswordString(password);
     }
+    public WebLoginAndPassword(String id,URI uri,String login,String password) throws IllegalArgumentException {
+        super(id);
+        if (uri==null) throw new IllegalArgumentException("uri must not be null");
+        if (login==null) throw new IllegalArgumentException("login must not be null");
+        if (password==null) throw new IllegalArgumentException("password must not be null");
+        this.uri      = uri ;
+        this.login    = login ;
+        this.password = new PasswordString(password);
+    }
+
+    @Override
+    public Password refresh(Password newValues) {
+        if (!newValues.getClass().equals(this.getClass())) throw new IllegalArgumentException("class mismatch");
+        WebLoginAndPassword newV = (WebLoginAndPassword)newValues;
+        return new WebLoginAndPassword(this.getId(),newV.getUri(),newV.getLogin(),newV.getPassword().getPassword());
+    }
 
     @Override
     public boolean equals(Object o) {

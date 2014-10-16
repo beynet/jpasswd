@@ -3,6 +3,9 @@ package org.beynet.gui;
 import javafx.application.Platform;
 import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 import org.beynet.model.Config;
 import org.beynet.model.password.Password;
 import org.beynet.model.store.*;
@@ -19,7 +22,7 @@ import java.util.function.Consumer;
 public class PasswordList extends ListView<Password> implements Observer,PasswordStoreEventVisitor {
 
 
-    public PasswordList(Consumer<Password> selectedPasswordChange) {
+    public PasswordList(Stage parent,Consumer<Password> selectedPasswordChange) {
         this.selectedPasswordChange = selectedPasswordChange;
         elements = Config.getInstance().getPasswordStore().getCopie();
         getItems().addAll(elements.values());
@@ -37,6 +40,18 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
         getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             this.selectedPasswordChange.accept(newValue);
         });
+        setOnMouseClicked(mouseEvent->{
+                if(mouseEvent.getButton().equals(MouseButton.PRIMARY)){
+                    if(mouseEvent.getClickCount() == 2){
+                        int selectedIndex = getSelectionModel().getSelectedIndex();
+                        if (selectedIndex>=0) {
+                            Password p = getItems().get(selectedIndex);
+                            new CreateOrModifyWebSitePassword(parent, (org.beynet.model.password.WebLoginAndPassword) p).show();
+                        }
+                    }
+                }
+            }
+        );
     }
 
     @Override
