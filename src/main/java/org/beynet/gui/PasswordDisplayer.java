@@ -6,12 +6,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import org.beynet.model.password.PasswordString;
+import org.beynet.model.password.PasswordVisitor;
 import org.beynet.model.password.WebLoginAndPassword;
 
 /**
  * Created by beynet on 13/10/2014.
  */
-public class PasswordDisplayer implements org.beynet.model.password.PasswordVisitor {
+public class PasswordDisplayer implements PasswordVisitor {
     PasswordDisplayer(GridPane p) {
         pane = p;
     }

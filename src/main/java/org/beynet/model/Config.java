@@ -1,5 +1,6 @@
 package org.beynet.model;
 
+import javafx.application.Platform;
 import org.beynet.model.store.PasswordStore;
 
 import javax.crypto.Cipher;
@@ -110,10 +111,13 @@ public class Config implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        try {
-            this.store.save(saveFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Platform.runLater(() -> {
+            try {
+                this.store.save(saveFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
     }
 }

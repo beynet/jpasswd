@@ -48,7 +48,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                         p.accept(new org.beynet.model.password.PasswordVisitor() {
                             @Override
                             public void visit(WebLoginAndPassword t) {
-                                new CreateOrModifyWebSitePassword(parent, (WebLoginAndPassword) p).show();
+                                new CreateOrModifyWebSitePassword(parent, t).show();
                             }
 
                             @Override
