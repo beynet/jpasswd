@@ -32,9 +32,9 @@ public class PasswordGeneratorTest {
 
 
     private void check(Integer max,Integer expectedNumber,Integer expectedSymbols) {
-        String s = PasswordGenerator.generateNewPassword(max.v, expectedNumber.intValue(), expectedSymbols.intValue());
+        String s = PasswordGenerator.generateNewPassword(max.intValue(), expectedNumber.intValue(), expectedSymbols.intValue());
         System.out.println(s);
-        assertThat(Integer.valueOf(s.length()), is(Integer.valueOf(10)));
+        assertThat(Integer.valueOf(s.length()), is(max));
         int n=0,syb=0;
         for (int i=0;i<s.length();i++) {
             char found = s.charAt(i);
@@ -56,27 +56,30 @@ public class PasswordGeneratorTest {
         Integer expectedNumber = Integer.valueOf(2);
         Integer expectedSymbols = Integer.valueOf(3);
         for (int i=0;i<1000;i++) {
-            check(expectedNumber, expectedSymbols);
+            check(max,expectedNumber, expectedSymbols);
         }
     }
 
     @Test
     public void chars2() {
+        Integer max = Integer.valueOf(12);
         Integer expectedNumber = Integer.valueOf(0);
         Integer expectedSymbols = Integer.valueOf(1);
-        check(expectedNumber, expectedSymbols);
+        check(max,expectedNumber, expectedSymbols);
     }
     @Test
     public void chars3() {
+        Integer max = Integer.valueOf(5);
         Integer expectedNumber = Integer.valueOf(1);
         Integer expectedSymbols = Integer.valueOf(0);
-        check(expectedNumber, expectedSymbols);
+        check(max,expectedNumber, expectedSymbols);
     }
     @Test
     public void chars4() {
-        Integer expectedNumber = Integer.valueOf(5);
-        Integer expectedSymbols = Integer.valueOf(5);
-        check(expectedNumber, expectedSymbols);
+        Integer max = Integer.valueOf(12);
+        Integer expectedNumber = Integer.valueOf(6);
+        Integer expectedSymbols = Integer.valueOf(6);
+        check(max,expectedNumber, expectedSymbols);
     }
 
 }

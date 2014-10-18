@@ -12,7 +12,7 @@ import javafx.stage.Stage;
  * @author beynet
  */
 public abstract class DialogNotModal extends Dialog {
-    public DialogNotModal(Stage parent,double with,double height) {
+    public DialogNotModal(Stage parent,Double with,Double height) {
         super(parent, with, height);
         initModality(Modality.NONE);
     }

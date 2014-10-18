@@ -142,9 +142,9 @@ public class Main extends Application {
             menuBar.getMenus().add(passwords);
             MenuItem generatePassword = new MenuItem("Generate Password");
             generatePassword.setOnAction(t -> {
-
+                new GeneratePassword(currentStage).show();
             });
-
+            passwords.getItems().add(generatePassword);
         }
 
 

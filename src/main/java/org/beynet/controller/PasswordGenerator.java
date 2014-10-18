@@ -26,16 +26,23 @@ public class PasswordGenerator {
         }
     }
 
-    public static String generateNewPassword(int length,int numbers,int symbols) {
+    /**
+     *
+     * @param length password expected length
+     * @param digits numbers of digits to be contained in the password
+     * @param symbols numbers of symbols to be contained in the password
+     * @return
+     */
+    public static String generateNewPassword(int length,int digits,int symbols) {
         StringBuilder result = new StringBuilder();
-        if (numbers<0) throw new IllegalArgumentException("numbers must be >0");
+        if (digits<0) throw new IllegalArgumentException("numbers must be >0");
         if (symbols<0) throw new IllegalArgumentException("symbols must be >0");
-        int letters = length-numbers-symbols;
-        if ((numbers+symbols)>length) throw new IllegalArgumentException("symbols+numbers must be <=length");
+        int letters = length-digits-symbols;
+        if ((digits+symbols)>length) throw new IllegalArgumentException("symbols+numbers must be <=length");
         StringBuilder resultLetters = new StringBuilder();
         StringBuilder resultNumbers = new StringBuilder();
         StringBuilder resultSymbols = new StringBuilder();
-        for (int i=0;i<numbers;i++) {
+        for (int i=0;i<digits;i++) {
             int n = r.nextInt(NUMBERS.length);
             resultNumbers.append(NUMBERS[n]);
         }
@@ -50,22 +57,22 @@ public class PasswordGenerator {
 
         for (int i=0;i<length;i++) {
             int typesMax = 0;
-            if (numbers>0) typesMax++;
+            if (digits>0) typesMax++;
             if (symbols>0) typesMax++;
             if (letters>0) typesMax++;
             int type = (typesMax!=1)?r.nextInt(typesMax):0;
             if (type==0) {
                 if (letters>0) {
                     result.append(resultLetters.charAt(-1+letters--));
-                } else if (numbers>0) {
-                    result.append(resultNumbers.charAt(-1+numbers--));
+                } else if (digits>0) {
+                    result.append(resultNumbers.charAt(-1+digits--));
                 }
                 else {
                     result.append(resultSymbols.charAt(-1+symbols--));
                 }
             }
-            else if (type==1 && numbers>0){
-                result.append(resultNumbers.charAt(-1+numbers--));
+            else if (type==1 && digits>0){
+                result.append(resultNumbers.charAt(-1+digits--));
             }
             else  {
                 result.append(resultSymbols.charAt(-1+symbols--));
