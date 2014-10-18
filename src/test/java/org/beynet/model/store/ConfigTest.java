@@ -1,5 +1,6 @@
 package org.beynet.model.store;
 
+import org.beynet.controller.PasswordGenerator;
 import org.beynet.model.Config;
 import org.junit.Test;
 

@@ -32,9 +32,6 @@ public class Main extends Application {
 
 
     private void createAskPassword(String ...args) {
-
-
-
         Group group  = new Group();
 
         HBox pane = new HBox();
@@ -120,20 +117,37 @@ public class Main extends Application {
         menuBar.prefWidthProperty().bind(currentStage.widthProperty());
         pane.setTop(menuBar);
 
-        Menu files = new Menu("files");
-        menuBar.getMenus().add(files);
+        // Main menu
+        // **********
+        {
+            Menu mainMenu = new Menu("JPasswd");
+            menuBar.getMenus().add(mainMenu);
 
-        // files menu
-        MenuItem exit = new MenuItem("Exit");
-        exit.setOnAction(t -> quitAppFromMenu());
+            // files menu
+            MenuItem exit = new MenuItem("Exit");
+            exit.setOnAction(t -> quitAppFromMenu());
 
-        MenuItem newWebSite = new MenuItem("Add Web Site");
-        newWebSite.setOnAction(t -> new CreateOrModifyWebSitePassword(currentStage).show());
+            MenuItem newWebSite = new MenuItem("Add Web Site");
+            newWebSite.setOnAction(t -> new CreateOrModifyWebSitePassword(currentStage).show());
 
-        MenuItem test = new MenuItem("test");
-        test.setOnAction(t -> new Alert(currentStage,"attention").show());
+            MenuItem test = new MenuItem("test");
+            test.setOnAction(t -> new Alert(currentStage, "attention").show());
+            mainMenu.getItems().addAll(test, newWebSite, exit);
+        }
 
-        files.getItems().addAll(test,newWebSite,exit);
+        // Password Menu
+        // **************
+        {
+            Menu passwords = new Menu("Tools");
+            menuBar.getMenus().add(passwords);
+            MenuItem generatePassword = new MenuItem("Generate Password");
+            generatePassword.setOnAction(t -> {
+
+            });
+
+        }
+
+
     }
 
     private void setTitle() {
