@@ -1,5 +1,15 @@
 package org.beynet.model.store;
 
+import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.*;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.*;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 import org.beynet.model.Config;
 import org.beynet.model.password.Password;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -22,10 +32,6 @@ public class PasswordStore extends Observable implements Serializable {
 
     private static final long serialVersionUID = 774794719034730233L;
 
-    public PasswordStore() {
-        passwords = new HashMap<>();
-    }
-
 
     /**
      * remove password by id
@@ -44,6 +50,11 @@ public class PasswordStore extends Observable implements Serializable {
             passwords.put(p.getId(), p);
             setChanged();
             notifyObservers(new PasswordModifiedOrCreated(p));
+        }
+        try {
+            p.index(writer);
+        } catch (IOException e) {
+            logger.error("error indexing password",e);
         }
     }
 
@@ -66,13 +77,12 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
-    public void save(Path targetFile) throws IOException {
-
+    public void save() throws IOException {
         synchronized (passwords) {
             ByteArrayOutputStream result = new ByteArrayOutputStream();
             ObjectMapper mapper = new ObjectMapper();
             mapper.writerWithType(new TypeReference<HashMap<String, Password>>(){}).writeValue(result, passwords);
-            try (OutputStream os = Files.newOutputStream(targetFile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)) {
+            try (OutputStream os = Files.newOutputStream(storePath, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)) {
                 try {
                     os.write(Config.getInstance().encrypt(result.toByteArray()));
                 }catch(RuntimeException e) {
@@ -82,17 +92,70 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
-    public static PasswordStore fromFile(Path fromFile,Config config) throws IOException, ClassNotFoundException {
-        PasswordStore result = new PasswordStore();
-        ObjectMapper mapper = new ObjectMapper();
-        final byte[] bytes = config.decrypt(Files.readAllBytes(fromFile));
-        result.passwords = mapper.readValue(new ByteArrayInputStream(bytes),new TypeReference<HashMap<String, Password>>(){});
+    public PasswordStore(Path fromFile,Config config) throws IOException, ClassNotFoundException {
+        this.storePath = fromFile;
+        this.idxPath   = this.storePath.getParent().resolve(storePath.getFileName()+".idx");
+        if (Files.exists(storePath) && Files.size(storePath)!=0) {
+            ObjectMapper mapper = new ObjectMapper();
+            final byte[] bytes = config.decrypt(Files.readAllBytes(fromFile));
+            passwords = mapper.readValue(new ByteArrayInputStream(bytes), new TypeReference<HashMap<String, Password>>() {
+            });
+        }
+        else {
+            passwords = new HashMap<>();
+        }
 
-        return result;
+        //create lucene index
+        Directory dir = FSDirectory.open(this.idxPath.toFile());
+        Analyzer analyzer = new StandardAnalyzer();
+        IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_1, analyzer);
+
+        iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+        this.writer = new IndexWriter(dir, iwc);
     }
 
-    public static PasswordStore fromFile(Path fromFile) throws IOException, ClassNotFoundException {
-        return fromFile(fromFile,Config.getInstance());
+    private IndexReader createReader() throws IOException {
+        return DirectoryReader.open(writer,true);
+    }
+
+    public List<Password> search(String query) throws IOException {
+        final IndexReader reader = createReader();
+        try {
+            IndexSearcher searcher = new IndexSearcher(reader);
+
+            BooleanQuery booleanQuery = new BooleanQuery();
+
+            Query patternQuery = new WildcardQuery(new Term(Password.FIELD_TXT,"*"+query+"*"));
+            booleanQuery.add(patternQuery, BooleanClause.Occur.MUST);
+
+            List<Password> result = new ArrayList<>();
+            synchronized (passwords) {
+
+                TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
+
+                searcher.search(booleanQuery, collector);
+                ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+                for (int i = 0; i < hits.length; ++i) {
+                    int docId = hits[i].doc;
+                    Document d = searcher.doc(docId);
+                    final Password password = passwords.get(d.get(Password.FIELD_ID));
+                    if (password!=null) result.add(password);
+                }
+            }
+            return result;
+        }finally {
+            reader.close();
+        }
+    }
+
+
+    public void close() throws IOException {
+        if (this.writer!=null) this.writer.close();
+    }
+
+    public PasswordStore(Path fromFile) throws IOException, ClassNotFoundException {
+        this(fromFile,Config.getInstance());
     }
 
     public void sendAllPasswords(Observer suscriber) {
@@ -103,5 +166,12 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
-    protected  Map<String,Password> passwords;
+    protected    Map<String,Password> passwords;
+    protected    Path                 storePath;
+    protected    Path                 idxPath  ;
+    protected    IndexWriter          writer   ;
+
+
+    private final static Logger logger = Logger.getLogger(PasswordStore.class);
+
 }

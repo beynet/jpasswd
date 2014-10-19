@@ -1,10 +1,12 @@
 package org.beynet.model.password;
 
 
+import org.apache.lucene.index.IndexWriter;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonSubTypes;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -49,6 +51,11 @@ public interface Password extends Serializable {
      */
     public Password refresh(Password newValues);
 
+    public void index(IndexWriter writer) throws IOException;
+
 
     public void accept(PasswordVisitor v);
+
+    public static final String FIELD_ID  ="id";
+    public static final String FIELD_TXT ="txt";
 }

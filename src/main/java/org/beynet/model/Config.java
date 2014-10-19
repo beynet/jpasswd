@@ -30,16 +30,12 @@ public class Config implements Observer {
         } catch (IOException e) {
             throw new RuntimeException("unable to create path :"+savePath,e);
         }
-        if (Files.exists(saveFile)) {
+
             try {
-                this.store = PasswordStore.fromFile(saveFile,this);
+                this.store = new PasswordStore(saveFile,this);
             } catch (Exception e) {
                throw new RuntimeException("unable to read database",e);
             }
-        }
-        else {
-            this.store = new PasswordStore();
-        }
         this.store.addObserver(this);
     }
 
@@ -113,7 +109,7 @@ public class Config implements Observer {
     public void update(Observable o, Object arg) {
         Platform.runLater(() -> {
             try {
-                this.store.save(saveFile);
+                this.store.save();
             } catch (IOException e) {
                 e.printStackTrace();
             }

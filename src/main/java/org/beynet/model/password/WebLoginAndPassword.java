@@ -1,5 +1,15 @@
 package org.beynet.model.password;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+
+import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -83,6 +93,27 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
     public void accept(PasswordVisitor v) {
         v.visit(this);
         password.accept(v);
+    }
+
+    @Override
+    public void index(IndexWriter writer) throws IOException {
+        // unindex previous version
+        Term idTerm = new Term(FIELD_ID,getId());
+        Query query = new TermQuery(idTerm);
+        writer.deleteDocuments(query);
+
+
+        Field idField = new StringField(FIELD_ID, getId(), Field.Store.YES);
+        StringBuilder sb = new StringBuilder(login);
+        sb.append(" ");
+        sb.append(getUri().toString());
+        Field txtField = new TextField(FIELD_TXT, sb.toString(), Field.Store.YES);
+
+        Document document = new Document();
+        document.add(idField);
+        document.add(txtField);
+
+        writer.addDocument(document);
     }
 
     public URI getUri() {

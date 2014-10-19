@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -31,9 +32,9 @@ public class PasswordStoreTest extends RootTest {
     private PasswordStore writeAndReload(PasswordStore s) throws IOException, ClassNotFoundException {
         Path temporaryFile =null;
         try {
-            temporaryFile = Files.createTempFile("tmp", ".dat");
-            s.save(temporaryFile);
-            return PasswordStore.fromFile(temporaryFile);
+            s.save();
+            s.close();
+            return new PasswordStore(s.storePath);
         }finally {
             if (temporaryFile!=null && Files.exists(temporaryFile)) Files.delete(temporaryFile);
         }
@@ -46,8 +47,8 @@ public class PasswordStoreTest extends RootTest {
      */
     @Test
     public void mergePasswordAddedOnRemote() throws IOException, ClassNotFoundException {
-        PasswordStore s1 = new PasswordStore();
-        PasswordStore s2 = new PasswordStore();
+        PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
+        PasswordStore s2 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
         Password p1,p2,p3;
 
@@ -71,8 +72,8 @@ public class PasswordStoreTest extends RootTest {
 
     @Test
     public void mergePasswordModifiedOnRemote() throws IOException, ClassNotFoundException {
-        PasswordStore s1 = new PasswordStore();
-        PasswordStore s2 = new PasswordStore();
+        PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
+        PasswordStore s2 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
         WebLoginAndPassword p1,p2;
 
@@ -99,8 +100,8 @@ public class PasswordStoreTest extends RootTest {
 
     @Test
     public void mergePasswordModifiedOnLocal() throws IOException, ClassNotFoundException {
-        PasswordStore s1 = new PasswordStore();
-        PasswordStore s2 = new PasswordStore();
+        PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
+        PasswordStore s2 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
         WebLoginAndPassword p1,p2;
 
@@ -127,5 +128,31 @@ public class PasswordStoreTest extends RootTest {
         assertThat(actual,is(p2));
     }
 
+
+    @Test
+    public void search() throws IOException, ClassNotFoundException {
+        PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
+
+        WebLoginAndPassword p1 = new WebLoginAndPassword(URI.create("http://www.google.fr"),"testeur","password");
+        WebLoginAndPassword p2 = new WebLoginAndPassword(URI.create("http://www.fresnes.info"),"testeur","password2");
+
+        s1.savePassword(p1);
+        s1.savePassword(p2);
+
+        List<Password> results = s1.search("google");
+        assertThat(new Integer(results.size()),is(Integer.valueOf(1)));
+        assertThat(results.get(0),is(p1));
+
+        results = s1.search("fresnes");
+        assertThat(new Integer(results.size()),is(Integer.valueOf(1)));
+        assertThat(results.get(0),is(p2));
+
+
+        results = s1.search("testeur");
+        assertThat(new Integer(results.size()),is(Integer.valueOf(2)));
+        assertThat(results.contains(p1),is(Boolean.TRUE));
+        assertThat(results.contains(p2),is(Boolean.TRUE));
+
+    }
 
 }
