@@ -1,12 +1,15 @@
 package org.beynet.gui;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
 
@@ -91,6 +94,10 @@ public class Main extends Application {
 
     private void addPasswordList(BorderPane pane) {
 
+        VBox box = new VBox();
+        TextField filter = new TextField();
+        filter.setPromptText("filter list");
+
         // create list with a call back to be used
         // to refresh passwordContentPane when selected passw has changed
         // --------------------------------------------------------------
@@ -103,7 +110,15 @@ public class Main extends Application {
         });
         passwordList.getStyleClass().add(Styles.PASSWD_LIST);
         passwordList.setPrefWidth(currentStage.getWidth() * 0.33);
-        pane.setLeft(passwordList);
+
+
+        filter.setOnKeyTyped((evt)->{
+            final String text = filter.getText();
+            passwordList.updateFilter(text.concat(evt.getCharacter()));
+        });
+
+        box.getChildren().addAll(filter, passwordList);
+        pane.setLeft(box);
     }
 
     private void addPasswordContent(BorderPane pane) {

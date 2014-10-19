@@ -114,6 +114,7 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         document.add(txtField);
 
         writer.addDocument(document);
+        writer.commit();
     }
 
     public URI getUri() {

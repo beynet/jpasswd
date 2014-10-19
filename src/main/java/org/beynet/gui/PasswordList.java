@@ -14,10 +14,7 @@ import org.beynet.model.store.PasswordRemoved;
 import org.beynet.model.store.PasswordStoreEvent;
 import org.beynet.model.store.PasswordStoreEventVisitor;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -78,7 +75,13 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                     getItems().remove(previousVersion);
                 }
                 elements.put(p.getId(),p);
-                getItems().add(p);
+                if (filter!=null) {
+                    final List<Password> matching = Controller.getMatching(filter);
+                    if (matching.contains(p)) getItems().add(p);
+                }
+                else {
+                    getItems().add(p);
+                }
             });
         }
     }
@@ -93,6 +96,28 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
         });
     }
 
+    public void updateFilter(String text) {
+        this.filter = text;
+        Platform.runLater(()->{
+            final List<Password> matching ;
+            getItems().clear();
+            if (text!=null && !"".equals(text)) {
+                matching=Controller.getMatching(text);
+                for (Password el:elements.values()) {
+                    if (matching.contains(el)) getItems().add(el);
+                }
+            }
+            else {
+                getItems().addAll(elements.values());
+            }
+
+        });
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         ((PasswordStoreEvent)arg).accept(this);
@@ -100,4 +125,6 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
 
     Map<String,Password> elements;
     private final Consumer<Password> selectedPasswordChange;
+
+    private String filter;
 }
