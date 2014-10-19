@@ -94,6 +94,10 @@ public class Config implements Observer {
         }
     }
 
+    public void changeMainPassword(String password) {
+        this.password=password;
+    }
+
     public final PasswordStore getPasswordStore() {
         return store;
     }
@@ -116,4 +120,6 @@ public class Config implements Observer {
         });
 
     }
+
+
 }

@@ -1,6 +1,7 @@
 package org.beynet.controller;
 
 import javafx.application.Platform;
+import org.apache.log4j.Logger;
 import org.beynet.model.Config;
 import org.beynet.model.password.Password;
 
@@ -27,6 +28,17 @@ public class Controller {
         });
     }
 
+    public static void changeMainPassword(String password) {
+        Platform.runLater(()->{
+            Config.getInstance().changeMainPassword(password);
+            try {
+                Config.getInstance().getPasswordStore().save();
+            } catch (IOException e) {
+                logger.error("error saving password file",e);
+            }
+        });
+    }
+
     public static void notifyPasswordModified(Password p) {
         Platform.runLater(()->{
             Config.getInstance().getPasswordStore().savePassword(p);
@@ -44,4 +56,6 @@ public class Controller {
     public static void initConfig(String text, Path savePath) {
         Config.initConfig(text, savePath);
     }
+
+    public final static Logger logger = Logger.getLogger(Controller.class);
 }
