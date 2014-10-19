@@ -139,19 +139,19 @@ public class PasswordStoreTest extends RootTest {
         s1.savePassword(p1);
         s1.savePassword(p2);
 
-        List<Password> results = s1.search("google");
+        Map<String,Password> results = s1.search("google");
         assertThat(new Integer(results.size()),is(Integer.valueOf(1)));
-        assertThat(results.get(0),is(p1));
+        assertThat(results.get(p1.getId()),is(p1));
 
         results = s1.search("fresnes");
         assertThat(new Integer(results.size()),is(Integer.valueOf(1)));
-        assertThat(results.get(0),is(p2));
+        assertThat(results.get(p2.getId()),is(p2));
 
 
         results = s1.search("testeur");
         assertThat(new Integer(results.size()),is(Integer.valueOf(2)));
-        assertThat(results.contains(p1),is(Boolean.TRUE));
-        assertThat(results.contains(p2),is(Boolean.TRUE));
+        assertThat(results.containsKey(p1.getId()),is(Boolean.TRUE));
+        assertThat(results.containsKey(p2.getId()),is(Boolean.TRUE));
 
     }
 

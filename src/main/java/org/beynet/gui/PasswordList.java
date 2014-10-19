@@ -76,8 +76,8 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                 }
                 elements.put(p.getId(),p);
                 if (filter!=null) {
-                    final List<Password> matching = Controller.getMatching(filter);
-                    if (matching.contains(p)) getItems().add(p);
+                    final Map<String,Password> matching = Controller.getMatching(filter);
+                    if (matching.containsKey(p.getId())) getItems().add(p);
                 }
                 else {
                     getItems().add(p);
@@ -99,12 +99,12 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     public void updateFilter(String text) {
         this.filter = text;
         Platform.runLater(()->{
-            final List<Password> matching ;
+            final Map<String,Password> matching ;
             getItems().clear();
             if (text!=null && !"".equals(text)) {
                 matching=Controller.getMatching(text);
                 for (Password el:elements.values()) {
-                    if (matching.contains(el)) getItems().add(el);
+                    if (matching.containsKey(el.getId())) getItems().add(el);
                 }
             }
             else {

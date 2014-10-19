@@ -7,9 +7,7 @@ import org.beynet.model.password.Password;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observer;
+import java.util.*;
 
 /**
  * Created by beynet on 16/10/2014.
@@ -45,11 +43,11 @@ public class Controller {
         });
     }
 
-    public static List<Password> getMatching(String filter) {
+    public static Map<String,Password> getMatching(String filter) {
         try {
             return Config.getInstance().getPasswordStore().search(filter);
         } catch (IOException e) {
-            return new ArrayList<>();
+            return new HashMap<>();
         }
     }
 
