@@ -2,6 +2,7 @@ package org.beynet.gui;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
@@ -35,7 +36,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         login.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         login.setPromptText(loginMessage);
 
-        TextField passwordT = new TextField();
+        PasswordField passwordT = new PasswordField();
         passwordT.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         passwordT.setPromptText(passwordMessage);
 

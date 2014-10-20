@@ -1,11 +1,9 @@
 package org.beynet.gui;
 
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -40,7 +38,7 @@ public class Main extends Application {
         HBox pane = new HBox();
         group.getChildren().add(pane);
 
-        final TextField password = new TextField();
+        final PasswordField password = new PasswordField();
         final Label passwordLabel = new Label("password :");
         final Button ok = new Button("ok");
 
