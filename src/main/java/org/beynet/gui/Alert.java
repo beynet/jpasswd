@@ -18,7 +18,7 @@ import javafx.stage.Stage;
  */
 public class Alert extends DialogModal {
     public Alert(Stage parent,String message) {
-        super(parent,150,50);
+        super(parent,Double.valueOf(150),Double.valueOf(50));
         Text forSize = new Text(message);
         forSize.getStyleClass().add(Styles.ALERT);
         forSize.getStyleClass().addAll(Styles.MESSAGE);

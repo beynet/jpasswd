@@ -118,7 +118,7 @@ public class PasswordStore extends Observable implements Serializable {
         return DirectoryReader.open(writer,true);
     }
 
-    public List<Password> search(String query) throws IOException {
+    public Map<String,Password> search(String query) throws IOException {
         final IndexReader reader = createReader();
         try {
             IndexSearcher searcher = new IndexSearcher(reader);
@@ -128,7 +128,7 @@ public class PasswordStore extends Observable implements Serializable {
             Query patternQuery = new WildcardQuery(new Term(Password.FIELD_TXT,"*"+query+"*"));
             booleanQuery.add(patternQuery, BooleanClause.Occur.MUST);
 
-            List<Password> result = new ArrayList<>();
+            Map<String,Password> result = new HashMap<>();
             synchronized (passwords) {
 
                 TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
@@ -140,7 +140,7 @@ public class PasswordStore extends Observable implements Serializable {
                     int docId = hits[i].doc;
                     Document d = searcher.doc(docId);
                     final Password password = passwords.get(d.get(Password.FIELD_ID));
-                    if (password!=null) result.add(password);
+                    if (password!=null) result.put(password.getId(),password);
                 }
             }
             return result;

@@ -31,7 +31,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         final String loginMessage ="web site login";
         final String passwordMessage ="web site password";
         final String uriMessage="web site URI";
-        TextField login=new TextField(loginMessage);
+        TextField login=new TextField();
 
         login.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         login.setPromptText(loginMessage);

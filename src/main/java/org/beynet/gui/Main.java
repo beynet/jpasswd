@@ -157,7 +157,13 @@ public class Main extends Application {
             generatePassword.setOnAction(t -> {
                 new GeneratePassword(currentStage).show();
             });
-            passwords.getItems().add(generatePassword);
+
+            MenuItem changeMainPassword = new MenuItem("Change application password");
+            changeMainPassword.setOnAction(t -> {
+                new ChangeMainPassword(currentStage).show();
+            });
+
+            passwords.getItems().addAll(generatePassword,changeMainPassword);
         }
 
 

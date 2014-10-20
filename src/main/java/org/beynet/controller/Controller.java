@@ -1,14 +1,13 @@
 package org.beynet.controller;
 
 import javafx.application.Platform;
+import org.apache.log4j.Logger;
 import org.beynet.model.Config;
 import org.beynet.model.password.Password;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observer;
+import java.util.*;
 
 /**
  * Created by beynet on 16/10/2014.
@@ -27,21 +26,34 @@ public class Controller {
         });
     }
 
+    public static void changeMainPassword(String password) {
+        Platform.runLater(()->{
+            Config.getInstance().changeMainPassword(password);
+            try {
+                Config.getInstance().getPasswordStore().save();
+            } catch (IOException e) {
+                logger.error("error saving password file",e);
+            }
+        });
+    }
+
     public static void notifyPasswordModified(Password p) {
         Platform.runLater(()->{
             Config.getInstance().getPasswordStore().savePassword(p);
         });
     }
 
-    public static List<Password> getMatching(String filter) {
+    public static Map<String,Password> getMatching(String filter) {
         try {
             return Config.getInstance().getPasswordStore().search(filter);
         } catch (IOException e) {
-            return new ArrayList<>();
+            return new HashMap<>();
         }
     }
 
     public static void initConfig(String text, Path savePath) {
         Config.initConfig(text, savePath);
     }
+
+    public final static Logger logger = Logger.getLogger(Controller.class);
 }
