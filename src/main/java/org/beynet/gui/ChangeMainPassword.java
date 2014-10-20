@@ -4,6 +4,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -18,7 +19,8 @@ public class ChangeMainPassword extends DialogModal {
 
         HBox pane = new HBox();
 
-        final TextField password = new TextField();
+        final PasswordField password = new PasswordField();
+        password.setPromptText("new password");
         final Label passwordLabel = new Label("password :");
         final Button ok = new Button("ok");
 
