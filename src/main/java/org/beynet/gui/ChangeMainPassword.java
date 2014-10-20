@@ -6,7 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
 
@@ -17,20 +19,28 @@ public class ChangeMainPassword extends DialogModal {
     public ChangeMainPassword(Stage parent) {
         super(parent,null,null);
 
-        HBox pane = new HBox();
+        GridPane pane = new GridPane();
 
         final PasswordField password = new PasswordField();
-        password.setPromptText("new password");
-        final Label passwordLabel = new Label("password :");
-        final Button ok = new Button("ok");
+        password.setPromptText("fill with new password");
+        final PasswordField passwordConfirm = new PasswordField();
+        passwordConfirm.setPromptText("confirm the new password");
+        final Button ok = new Button("change password");
 
         ok.setOnAction(event -> {
             if (password.getText()!=null && !password.getText().isEmpty()) {
-                Controller.changeMainPassword(password.getText());
-                close();
+                if (password.getText().equals(passwordConfirm.getText())) {
+                    Controller.changeMainPassword(password.getText());
+                    close();
+                }
+                else {
+                    new Alert(this,"password mismatch").show();
+                }
             }
         });
-        pane.getChildren().addAll(passwordLabel,password,ok);
+        pane.add(password,0,0,2,1);
+        pane.add(passwordConfirm,0,1,2,1);
+        pane.add(ok,1,2);
         getRootGroup().getChildren().add(pane);
     }
 }
