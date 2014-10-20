@@ -1,5 +1,6 @@
 package org.beynet.gui;
 
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -19,6 +20,7 @@ public class PasswordDisplayer implements PasswordVisitor {
 
     @Override
     public void visit(WebLoginAndPassword t) {
+        if (pane.getChildren()!=null) pane.getChildren().clear();
         Label label = new Label("Web site="+t.getUri().getHost()!=null?t.getUri().getHost():t.getUri().toString());
         pane.add(label,0,0);
 
@@ -31,9 +33,11 @@ public class PasswordDisplayer implements PasswordVisitor {
         Label passwordLabel = new Label("Password");
         TextField password = new TextField(t.getPassword().getHiddenPassword());
         ImageView imageView = new ImageView(eye);
-        imageView.setFitWidth(24);
-        imageView.setFitHeight(24);
-        imageView.setOnMouseClicked(event -> {
+        imageView.setFitWidth(23);
+        imageView.setFitHeight(23);
+        Button toggleDisplay = new Button();
+        toggleDisplay.setGraphic(imageView);
+        toggleDisplay.setOnAction(event -> {
             if (t.getPassword().getHiddenPassword().equals(password.getText())) {
                 password.setText(t.getPassword().getPassword());
                 imageView.setImage(eyeHidden);
@@ -48,7 +52,7 @@ public class PasswordDisplayer implements PasswordVisitor {
         password.setEditable(false);
         pane.add(passwordLabel,0,2);
         pane.add(password,1,2);
-        pane.add(imageView,2,2);
+        pane.add(toggleDisplay,2,2);
 
     }
 
