@@ -9,7 +9,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
+import org.beynet.sync.GoogleDriveSync;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +23,8 @@ public class Main extends Application {
 
     private static Path savePath;
     public static void main(String...args) {
+        BasicConfigurator.configure();
+        Logger.getRootLogger().setLevel(Level.DEBUG);
         if (args.length==0) {
             Path userHome = Paths.get((String) System.getProperty("user.home"));
             savePath = userHome.resolve(".jpasswd");
@@ -144,7 +150,10 @@ public class Main extends Application {
             newWebSite.setOnAction(t -> new CreateOrModifyWebSitePassword(currentStage).show());
 
             MenuItem test = new MenuItem("test");
-            test.setOnAction(t -> new Alert(currentStage, "attention").show());
+            test.setOnAction(t -> {
+                final GoogleDriveSync googleDriveSync = new GoogleDriveSync(currentStage);
+                new Thread(googleDriveSync).start();
+            });
             mainMenu.getItems().addAll(test, newWebSite, exit);
         }
 

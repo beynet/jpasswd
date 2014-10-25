@@ -92,6 +92,13 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
+    public byte[] getFileContent() throws IOException {
+        synchronized (passwords) {
+            if (Files.exists(storePath)) return Files.readAllBytes(storePath);
+            else return null;
+        }
+    }
+
     public PasswordStore(Path fromFile,Config config) throws IOException, ClassNotFoundException {
         this.storePath = fromFile;
         this.idxPath   = this.storePath.getParent().resolve(storePath.getFileName()+".idx");

@@ -2,9 +2,12 @@ package org.beynet.model.store;
 
 import org.beynet.controller.PasswordGenerator;
 import org.beynet.model.Config;
+import org.beynet.utils.URIUtils;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -22,4 +25,6 @@ public class ConfigTest extends RootTest{
         final byte[] decrypted = Config.getInstance().decrypt(encrypt);
         assertThat(new String(decrypted,"UTF-8"),is(test));
     }
+
+
 }

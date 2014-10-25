@@ -24,7 +24,7 @@ public class Config implements Observer {
     private Config(String password,Path savePath) {
         this.password = password;
         this.savePath=savePath;
-        this.saveFile = this.savePath.resolve(Paths.get("database.dat"));
+        this.saveFile = this.savePath.resolve(Paths.get(APPLICATION_FILE_NAME));
         try {
             Files.createDirectories(savePath);
         } catch (IOException e) {
@@ -102,12 +102,6 @@ public class Config implements Observer {
         return store;
     }
 
-    private  static  Config _instance  = null ;
-    private final PasswordStore store;
-    private Path savePath;
-    private Path saveFile;
-    private String password;
-    private static final String ALGO  = "AES";
 
     @Override
     public void update(Observable o, Object arg) {
@@ -121,5 +115,14 @@ public class Config implements Observer {
 
     }
 
+
+    private  static  Config _instance  = null ;
+    private final PasswordStore store;
+    private Path savePath;
+    private Path saveFile;
+    private String password;
+    private static final String ALGO  = "AES";
+
+    public static final String APPLICATION_FILE_NAME = "jpasswd.dat";
 
 }
