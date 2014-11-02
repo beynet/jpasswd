@@ -77,6 +77,7 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
+
     public void save() throws IOException {
         synchronized (passwords) {
             ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -99,26 +100,46 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
-    public PasswordStore(Path fromFile,Config config) throws IOException, ClassNotFoundException {
+    /**
+     * construct a password store from byte array
+     * @param fromMemory : decrypted password store content
+     * @param config
+     * @throws IOException
+     */
+    public PasswordStore(byte[] fromMemory,Config config) throws IOException {
+        this(null,fromMemory,config);
+    }
+
+    public PasswordStore(Path fromFile,Config config) throws IOException {
+        this(fromFile,null,config);
+    }
+
+    public PasswordStore(Path fromFile,byte[] fromMemory,Config config) throws IOException {
         this.storePath = fromFile;
-        this.idxPath   = this.storePath.getParent().resolve(storePath.getFileName()+".idx");
-        if (Files.exists(storePath) && Files.size(storePath)!=0) {
-            ObjectMapper mapper = new ObjectMapper();
-            final byte[] bytes = config.decrypt(Files.readAllBytes(fromFile));
-            passwords = mapper.readValue(new ByteArrayInputStream(bytes), new TypeReference<HashMap<String, Password>>() {
-            });
+        if (this.storePath!=null) {
+            this.idxPath = this.storePath.getParent().resolve(storePath.getFileName() + ".idx");
+            if (Files.exists(storePath) && Files.size(storePath) != 0) {
+                ObjectMapper mapper = new ObjectMapper();
+                final byte[] bytes = config.decrypt(Files.readAllBytes(fromFile));
+                passwords = mapper.readValue(new ByteArrayInputStream(bytes), new TypeReference<HashMap<String, Password>>() {
+                });
+            } else {
+                passwords = new HashMap<>();
+            }
+
+            //create lucene index
+            Directory dir = FSDirectory.open(this.idxPath.toFile());
+            Analyzer analyzer = new StandardAnalyzer();
+            IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_1, analyzer);
+
+            iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+            this.writer = new IndexWriter(dir, iwc);
         }
         else {
-            passwords = new HashMap<>();
+            ObjectMapper mapper = new ObjectMapper();
+            passwords = mapper.readValue(new ByteArrayInputStream(fromMemory), new TypeReference<HashMap<String, Password>>() {
+            });
         }
-
-        //create lucene index
-        Directory dir = FSDirectory.open(this.idxPath.toFile());
-        Analyzer analyzer = new StandardAnalyzer();
-        IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_1, analyzer);
-
-        iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-        this.writer = new IndexWriter(dir, iwc);
     }
 
     private IndexReader createReader() throws IOException {

@@ -3,6 +3,7 @@ package org.beynet.sync;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
+import org.beynet.exceptions.PasswordMismatchException;
 import org.beynet.gui.GoogleDriveAuthent;
 import org.beynet.model.Config;
 import org.codehaus.jackson.JsonNode;
@@ -14,8 +15,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +37,8 @@ public class GoogleDriveSync implements Runnable{
     public void run() {
         while(true) {
             try {
-                saveFile(Config.getInstance().getPasswordStore().getFileContent());
+                mainLoop(Config.getInstance().getPasswordStore().getFileContent());
+                break;
             } catch (IOException e) {
                 logger.error("error during process",e);
             }
@@ -50,7 +50,7 @@ public class GoogleDriveSync implements Runnable{
         }
     }
 
-    public void saveFile(byte[] file) throws IOException {
+    public void mainLoop(byte[] file) throws IOException {
         if (credentials.isEmpty()) {
             logger.debug("no tokens first authent");
             this.code = null;
@@ -62,7 +62,49 @@ public class GoogleDriveSync implements Runnable{
             retrieveAccessTokenFromRefreshTokenCode(credentials.get(REFRESH_TOKEN));
         }
         searchApplicationFileId();
-        postFile(file);
+        if (fileFound!=null) mergeWithRemote();
+        //postFile(file);
+    }
+
+    private void mergeWithRemote() throws IOException {
+        final String downloadUrlStr = this.fileFound.get("downloadUrl").getTextValue();
+        final URL downloadUrl = new URL(downloadUrlStr +"&access_token="+credentials.get(ACCESS_TOKEN));
+
+        final HttpURLConnection urlConnection = (HttpURLConnection) downloadUrl.openConnection();
+        urlConnection.setRequestMethod("GET");
+        urlConnection.setDoOutput(false);
+        final int responseCode = urlConnection.getResponseCode();
+        if (responseCode==200) {
+            try(InputStream is =urlConnection.getInputStream()){
+                byte[] remoteFileContent = readAllByte(is);
+                try {
+                    Config.getInstance().merge(remoteFileContent);
+                } catch (PasswordMismatchException e) {
+                    //TODO : ask for remote file password
+                }
+            }
+        }
+        else {
+            InputStream is ;
+            if (responseCode>=400) {
+                is = urlConnection.getErrorStream();
+            }
+            else {
+                is = urlConnection.getInputStream();
+            }
+            try (InputStream response = is) {
+                if (responseCode!=401) {
+                    final String json = getJsonString(response);
+                    throw new IOException("Error received from serveur code=" + responseCode + " message=" + json);
+                }
+                else {
+                    credentials.remove(ACCESS_TOKEN);
+                }
+            }
+        }
+
+
+
     }
 
     private void callAuthent() {
@@ -87,12 +129,27 @@ public class GoogleDriveSync implements Runnable{
     }
 
 
+    /**
+     * method called to upload the file when this file does not already exist
+     * @param file
+     * @throws IOException
+     */
     private void createNewFile(byte[] file) throws IOException {
+        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
+        uploadFile(file,r,"POST");
+    }
+
+    private void modifyUploadedFile(byte[] file) throws IOException {
+        final String id = fileFound.get("id").getTextValue();
+        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files/"+id+"?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
+        logger.info("will update file id="+id);
+        uploadFile(file, r, "PUT");
+    }
+
+    private void uploadFile(byte[] file,URL r,String httpMethod) throws IOException {
         ByteArrayOutputStream response = new ByteArrayOutputStream();
         final String json ="{\"title\":\"jpasswd.dat\"}";
         final String part ="jpasswd_part";
-        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
-
 
         writeString(response, "--" + part + "\r\n");
         writeString(response,"Content-Type: application/json; charset=UTF-8\r\n\r\n");
@@ -100,23 +157,22 @@ public class GoogleDriveSync implements Runnable{
         writeString(response, "\r\n--" + part + "\r\n");
         writeString(response,"Content-Type: application/dat\r\n\r\n");
         response.write(file);
-        writeString(response,"\r\n\r\n--"+part+"--\r\n");
+        writeString(response,"\r\n--"+part+"--\r\n");
 
         final HttpURLConnection urlConnection = (HttpURLConnection) r.openConnection();
         urlConnection.setRequestProperty("Content-Type","multipart/related; boundary=\""+part+"\"");
         urlConnection.setRequestProperty("Content-Length",Integer.valueOf(response.size()).toString());
-        urlConnection.setRequestMethod("POST");
+        urlConnection.setRequestMethod(httpMethod);
         urlConnection.setDoOutput(true);
         urlConnection.setDoInput(true);
 
         try (OutputStream os = urlConnection.getOutputStream()) {
             os.write(response.toByteArray());
-            Files.write(Paths.get("/tmp/response.dat"),response.toByteArray());
         }
         final int responseCode = urlConnection.getResponseCode();
         if (responseCode<=200) {
             try(InputStream is =urlConnection.getInputStream()){
-                logger.debug("file created - response ="+getJsonString(is));
+                logger.debug("file uploaded - response ="+getJsonString(is));
             }
         }
         else {
@@ -131,15 +187,27 @@ public class GoogleDriveSync implements Runnable{
                 final String error = getJsonString(is2);
                 throw new IOException("Error received from serveur code="+responseCode+" message="+error);
             }
-
         }
-
     }
 
     private void postFile(byte[] file) throws IOException {
         if (fileFound==null) {
             createNewFile(file);
         }
+        else {
+            modifyUploadedFile(file);
+        }
+    }
+
+    byte[] readAllByte(InputStream is) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        while (true) {
+            final int read = is.read(buffer);
+            if (read==-1) break;
+            result.write(buffer,0,read);
+        }
+        return result.toByteArray();
     }
 
     /**
@@ -149,14 +217,7 @@ public class GoogleDriveSync implements Runnable{
      * @throws IOException
      */
     String getJsonString(InputStream is) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        while (true) {
-            final int read = is.read(buffer);
-            if (read==-1) break;
-            result.write(buffer,0,read);
-        }
-        return new String(result.toByteArray(),"UTF-8");
+        return new String(readAllByte(is),"UTF-8");
     }
 
     /**
@@ -244,6 +305,8 @@ public class GoogleDriveSync implements Runnable{
 //        reconnect();
     }
 
+
+
     void searchApplicationFileId() throws IOException {
         logger.debug("search expected file on server");
         URL url ;
@@ -266,7 +329,7 @@ public class GoogleDriveSync implements Runnable{
                     JsonNode fileNode = items.get(i);
                     final JsonNode title = fileNode.get("title");
                     final JsonNode id = fileNode.get("id");
-                    if (Config.APPLICATION_FILE_NAME.equals(title)) {
+                    if (title!=null && id!=null && Config.APPLICATION_FILE_NAME.equals(title.getTextValue())) {
                         logger.info("file found on server with id="+id.getTextValue());
                         this.fileFound = fileNode;
                     }

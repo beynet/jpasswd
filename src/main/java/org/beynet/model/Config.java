@@ -1,6 +1,7 @@
 package org.beynet.model;
 
 import javafx.application.Platform;
+import org.beynet.exceptions.PasswordMismatchException;
 import org.beynet.model.store.PasswordStore;
 
 import javax.crypto.Cipher;
@@ -56,6 +57,17 @@ public class Config implements Observer {
             throw new RuntimeException("config not initialized");
         }
         return _instance;
+    }
+
+    public void merge(byte[] content) throws IOException, PasswordMismatchException {
+        final byte[] decrypt ;
+        try {
+            decrypt = decrypt(content);
+        } catch(Exception e) {
+            throw new PasswordMismatchException();
+        }
+        final PasswordStore toMergeWith = new PasswordStore(decrypt, this);
+        getPasswordStore().merge(toMergeWith);
     }
 
     public byte[] completeTo128Bits(String password) throws UnsupportedEncodingException {
