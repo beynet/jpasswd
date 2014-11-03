@@ -133,6 +133,7 @@ public enum GoogleDriveSyncState {
             if (responseCode==200) {
                 try(InputStream is =urlConnection.getInputStream()){
                     String listFiles = getJsonString(is);
+                    logger.debug("files found=\n"+listFiles);
                     ObjectMapper mapper = new ObjectMapper();
                     JsonNode actualObj = mapper.readTree(listFiles);
                     final ArrayNode items = (ArrayNode)actualObj.get("items");
@@ -140,7 +141,9 @@ public enum GoogleDriveSyncState {
                         JsonNode fileNode = items.get(i);
                         final JsonNode title = fileNode.get("title");
                         final JsonNode id = fileNode.get("id");
-                        if (title!=null && id!=null && Config.APPLICATION_FILE_NAME.equals(title.getTextValue())) {
+                        final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed");
+                        
+                        if (title!=null && id!=null && Config.APPLICATION_FILE_NAME.equals(title.getTextValue()) && explicitlyTrashed.getBooleanValue()==false) {
                             logger.info("file found on server with id="+id.getTextValue());
                             return fileNode;
                         }
