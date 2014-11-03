@@ -72,6 +72,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     @Override
     public void visit(PasswordModifiedOrCreated modif) {
         Password p = modif.getPassword();
+        if (p instanceof GoogleDrive) return;
         synchronized (elements) {
             final Password previousVersion = elements.get(p.getId());
 
@@ -95,6 +96,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     @Override
     public void visit(PasswordRemoved removed) {
         Password p = removed.getPassword();
+        if (p instanceof GoogleDrive) return;
         String id = p.getId();
         Platform.runLater(() -> {
             Password toRemove=elements.remove(id);
