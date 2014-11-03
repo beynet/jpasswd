@@ -142,7 +142,7 @@ public enum GoogleDriveSyncState {
                         final JsonNode title = fileNode.get("title");
                         final JsonNode id = fileNode.get("id");
                         final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed");
-                        
+
                         if (title!=null && id!=null && Config.APPLICATION_FILE_NAME.equals(title.getTextValue()) && explicitlyTrashed.getBooleanValue()==false) {
                             logger.info("file found on server with id="+id.getTextValue());
                             return fileNode;
@@ -311,7 +311,10 @@ public enum GoogleDriveSyncState {
             final int responseCode = urlConnection.getResponseCode();
             if (responseCode<300) {
                 try(InputStream is =urlConnection.getInputStream()){
-                    logger.debug("file uploaded - response ="+getJsonString(is));
+                    final String jsonString = getJsonString(is);
+                    logger.debug("file uploaded - response ="+ jsonString);
+                    ObjectMapper mapper = new ObjectMapper();
+                    credentials.put(REMOTE_FILE, mapper.readTree(jsonString));
                 }
             }
             else {
