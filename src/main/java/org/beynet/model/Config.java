@@ -2,6 +2,7 @@ package org.beynet.model;
 
 import javafx.application.Platform;
 import org.beynet.exceptions.PasswordMismatchException;
+import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.store.PasswordStore;
 
 import javax.crypto.Cipher;
@@ -32,11 +33,11 @@ public class Config implements Observer {
             throw new RuntimeException("unable to create path :"+savePath,e);
         }
 
-            try {
-                this.store = new PasswordStore(saveFile,this);
-            } catch (Exception e) {
-               throw new RuntimeException("unable to read database",e);
-            }
+        try {
+            this.store = new PasswordStore(saveFile,this);
+        } catch (Exception e) {
+            throw new RuntimeException("unable to read database",e);
+        }
         this.store.addObserver(this);
     }
 
@@ -68,6 +69,17 @@ public class Config implements Observer {
         }
         final PasswordStore toMergeWith = new PasswordStore(decrypt, this);
         getPasswordStore().merge(toMergeWith);
+    }
+
+    /**
+     * save google drive refresh token into database
+     * @param refreshToken
+     */
+    public void updateGoogleDriveRefreshToken(String refreshToken) {
+        getPasswordStore().savePassword(new GoogleDrive(refreshToken));
+    }
+    public String getGoogleDriveRefreshToken() {
+        return getPasswordStore().getGoogleDriveRefreshToken();
     }
 
     public byte[] completeTo128Bits(String password) throws UnsupportedEncodingException {

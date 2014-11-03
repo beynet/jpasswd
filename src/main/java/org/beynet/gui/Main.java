@@ -1,6 +1,7 @@
 package org.beynet.gui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -13,7 +14,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
-import org.beynet.sync.GoogleDriveSync;
+import org.beynet.sync.googledrive.GoogleDriveSync;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,6 +60,7 @@ public class Main extends Application {
         currentScene = new Scene(group);
         currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         currentStage.setScene(currentScene);
+
     }
 
     private void createMainScene() {
@@ -82,6 +84,8 @@ public class Main extends Application {
         currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
             passwordList.setPrefWidth(newValue.doubleValue() * 0.33);
         });
+
+        new Thread(new GoogleDriveSync(currentStage)).start();
     }
 
     @Override
@@ -149,12 +153,7 @@ public class Main extends Application {
             MenuItem newWebSite = new MenuItem("Add Web Site");
             newWebSite.setOnAction(t -> new CreateOrModifyWebSitePassword(currentStage).show());
 
-            MenuItem test = new MenuItem("test");
-            test.setOnAction(t -> {
-                final GoogleDriveSync googleDriveSync = new GoogleDriveSync(currentStage);
-                new Thread(googleDriveSync).start();
-            });
-            mainMenu.getItems().addAll(test, newWebSite, exit);
+            mainMenu.getItems().addAll( newWebSite, exit);
         }
 
         // Password Menu

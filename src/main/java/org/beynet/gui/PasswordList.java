@@ -6,6 +6,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
+import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.password.Password;
 import org.beynet.model.password.PasswordString;
 import org.beynet.model.password.WebLoginAndPassword;
@@ -52,6 +53,11 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                             }
 
                             @Override
+                            public void visit(GoogleDrive t) {
+
+                            }
+
+                            @Override
                             public void visit(PasswordString s) {
 
                             }
@@ -92,7 +98,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
         String id = p.getId();
         Platform.runLater(() -> {
             Password toRemove=elements.remove(id);
-            getItems().remove(toRemove);
+            if (toRemove!=null) getItems().remove(toRemove);
         });
     }
 

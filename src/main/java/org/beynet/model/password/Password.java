@@ -17,7 +17,8 @@ import java.io.Serializable;
     include = JsonTypeInfo.As.PROPERTY,
     property = "class")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = WebLoginAndPassword.class)
+    @JsonSubTypes.Type(value = WebLoginAndPassword.class),
+    @JsonSubTypes.Type(value = GoogleDrive.class)
 })
 public interface Password extends Serializable {
     @JsonIgnore

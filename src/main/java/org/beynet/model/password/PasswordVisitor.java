@@ -7,6 +7,8 @@ public interface PasswordVisitor {
 
     public void visit(WebLoginAndPassword t);
 
+    public void visit(GoogleDrive t);
+
     public void visit(PasswordString s);
 
 }

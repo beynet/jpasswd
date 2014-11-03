@@ -11,6 +11,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.beynet.model.Config;
+import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.password.Password;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -42,6 +43,13 @@ public class PasswordStore extends Observable implements Serializable {
             final Password password = passwords.remove(id);
             setChanged();
             notifyObservers(new PasswordRemoved(password));
+        }
+    }
+
+    public String getGoogleDriveRefreshToken() {
+        synchronized (passwords) {
+            final GoogleDrive password = (GoogleDrive) passwords.get(GoogleDrive.GOOGLE_DRIVE_ID);
+            return password!=null?password.getRefreshToken():null;
         }
     }
 
@@ -78,24 +86,33 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
 
+    private void save(OutputStream os) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writerWithType(new TypeReference<HashMap<String, Password>>(){}).writeValue(result, passwords);
+        try {
+            os.write(Config.getInstance().encrypt(result.toByteArray()));
+        }catch(RuntimeException e) {
+            throw new IOException(e);
+        }
+    }
+
+
     public void save() throws IOException {
         synchronized (passwords) {
-            ByteArrayOutputStream result = new ByteArrayOutputStream();
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writerWithType(new TypeReference<HashMap<String, Password>>(){}).writeValue(result, passwords);
             try (OutputStream os = Files.newOutputStream(storePath, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)) {
-                try {
-                    os.write(Config.getInstance().encrypt(result.toByteArray()));
-                }catch(RuntimeException e) {
-                    throw new IOException(e);
-                }
+                save(os);
             }
         }
     }
 
     public byte[] getFileContent() throws IOException {
         synchronized (passwords) {
-            if (Files.exists(storePath)) return Files.readAllBytes(storePath);
+            if (!passwords.isEmpty()) {
+                final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                save(byteArrayOutputStream);
+                return byteArrayOutputStream.toByteArray();
+            }
             else return null;
         }
     }
