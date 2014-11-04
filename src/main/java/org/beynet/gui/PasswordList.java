@@ -5,6 +5,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
+import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
 import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.password.Password;
@@ -135,4 +136,6 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     private final Consumer<Password> selectedPasswordChange;
 
     private String filter;
+
+    private final static Logger logger = Logger.getLogger(PasswordList.class);
 }
