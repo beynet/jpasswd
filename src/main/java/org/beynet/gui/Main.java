@@ -5,6 +5,8 @@ import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -120,9 +122,9 @@ public class Main extends Application {
         passwordList.setPrefWidth(currentStage.getWidth() * 0.33);
 
 
-        filter.setOnKeyTyped((evt)->{
+        filter.setOnKeyReleased((evt)->{
             final String text = filter.getText();
-            passwordList.updateFilter(text.concat(evt.getCharacter()));
+            passwordList.updateFilter(text);
         });
 
         box.getChildren().addAll(filter, passwordList);
