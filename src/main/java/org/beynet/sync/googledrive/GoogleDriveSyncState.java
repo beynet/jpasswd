@@ -143,7 +143,9 @@ public enum GoogleDriveSyncState {
                         final JsonNode id = fileNode.get("id");
                         final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed");
 
-                        if (title!=null && id!=null && Config.APPLICATION_FILE_NAME.equals(title.getTextValue()) && explicitlyTrashed.getBooleanValue()==false) {
+                        if (title!=null && id!=null && Config.APPLICATION_FILE_NAME.equals(title.getTextValue()) &&
+                            (explicitlyTrashed==null|| explicitlyTrashed.getBooleanValue()==false)
+                            ) {
                             logger.info("file found on server with id="+id.getTextValue());
                             return fileNode;
                         }
