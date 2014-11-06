@@ -30,7 +30,6 @@ public abstract class AbstractPassword implements Password {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (modified != null ? !modified.equals(that.modified) : that.modified != null) return false;
-
         return true;
     }
 

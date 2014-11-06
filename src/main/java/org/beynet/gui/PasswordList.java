@@ -7,10 +7,7 @@ import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
-import org.beynet.model.password.GoogleDrive;
-import org.beynet.model.password.Password;
-import org.beynet.model.password.PasswordString;
-import org.beynet.model.password.WebLoginAndPassword;
+import org.beynet.model.password.*;
 import org.beynet.model.store.PasswordModifiedOrCreated;
 import org.beynet.model.store.PasswordRemoved;
 import org.beynet.model.store.PasswordStoreEvent;
@@ -59,6 +56,11 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                             }
 
                             @Override
+                            public void visit(DeletedPassword t) {
+
+                            }
+
+                            @Override
                             public void visit(PasswordString s) {
 
                             }
@@ -82,6 +84,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                     elements.remove(previousVersion);
                     getItems().remove(previousVersion);
                 }
+                if (p instanceof DeletedPassword) return;
                 elements.put(p.getId(),p);
                 if (filter!=null) {
                     final Map<String,Password> matching = Controller.getMatching(filter);

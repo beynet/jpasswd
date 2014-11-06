@@ -6,10 +6,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
-import org.beynet.model.password.GoogleDrive;
-import org.beynet.model.password.PasswordString;
-import org.beynet.model.password.PasswordVisitor;
-import org.beynet.model.password.WebLoginAndPassword;
+import org.beynet.model.password.*;
 
 /**
  * Created by beynet on 13/10/2014.
@@ -22,6 +19,11 @@ public class PasswordDisplayer implements PasswordVisitor {
     @Override
     public void visit(GoogleDrive t) {
 
+    }
+
+    @Override
+    public void visit(DeletedPassword t) {
+        
     }
 
     @Override

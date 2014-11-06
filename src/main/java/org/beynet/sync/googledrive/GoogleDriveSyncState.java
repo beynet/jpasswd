@@ -143,7 +143,7 @@ public enum GoogleDriveSyncState {
                         final JsonNode id = fileNode.get("id");
                         final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed");
 
-                        if (title!=null && id!=null && Config.APPLICATION_FILE_NAME.equals(title.getTextValue()) &&
+                        if (title!=null && id!=null && Config.getInstance().getFileName().equals(title.getTextValue()) &&
                             (explicitlyTrashed==null|| explicitlyTrashed.getBooleanValue()==false)
                             ) {
                             logger.info("file found on server with id="+id.getTextValue());
@@ -289,7 +289,7 @@ public enum GoogleDriveSyncState {
 
         private void uploadFile(Map<String,Object> credentials,byte[] file,URL r,String httpMethod) throws IOException {
             ByteArrayOutputStream response = new ByteArrayOutputStream();
-            final String json ="{\"title\":\"jpasswd.dat\"}";
+            final String json ="{\"title\":\""+Config.getInstance().getFileName()+"\"}";
             final String part ="jpasswd_part";
 
             writeString(response, "--" + part + "\r\n");

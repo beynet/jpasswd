@@ -11,4 +11,6 @@ public interface PasswordVisitor {
 
     public void visit(PasswordString s);
 
+    public void visit(DeletedPassword s);
+
 }

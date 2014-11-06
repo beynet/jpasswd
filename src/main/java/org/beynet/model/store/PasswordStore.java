@@ -11,6 +11,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.beynet.model.Config;
+import org.beynet.model.password.DeletedPassword;
 import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.password.Password;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -40,9 +41,17 @@ public class PasswordStore extends Observable implements Serializable {
      */
     public void removePassword(String id) {
         synchronized (passwords) {
+            final Password notify ;
             final Password password = passwords.remove(id);
+            if (password!=null) {
+                notify = new DeletedPassword(password.getId());
+                passwords.put(id,notify);
+            }
+            else {
+                notify=password;
+            }
             setChanged();
-            notifyObservers(new PasswordRemoved(password));
+            notifyObservers(new PasswordRemoved(notify));
         }
     }
 

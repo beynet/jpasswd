@@ -9,6 +9,6 @@ import java.nio.file.Paths;
  */
 public class RootTest {
     static {
-        Config.initConfig("password", Paths.get(System.getProperty("java.io.tmpdir")));
+        Config.initConfig("password", Paths.get(System.getProperty("java.io.tmpdir")),"jptest.dat");
     }
 }

@@ -25,17 +25,25 @@ import java.nio.file.Paths;
 public class Main extends Application {
 
     private static Path savePath;
+    private static String fileName;
     public static void main(String...args) {
         BasicConfigurator.configure();
         Logger.getRootLogger().setLevel(Level.DEBUG);
         if (args.length==0) {
             Path userHome = Paths.get((String) System.getProperty("user.home"));
             savePath = userHome.resolve(".jpasswd");
+            fileName=null;
         }
         else {
             Path userHome = Paths.get(args[0]);
             if (!Files.exists(userHome)) throw new RuntimeException("path "+userHome+" does not exist");
             savePath = userHome.resolve(".jpasswd");
+            if (args.length==2) {
+                fileName=args[1];
+            }
+            else {
+                fileName=null;
+            }
         }
         launch(args);
     }
@@ -53,7 +61,7 @@ public class Main extends Application {
 
         ok.setOnAction(event -> {
             if (password.getText()!=null && !password.getText().isEmpty()) {
-                Controller.initConfig(password.getText(), savePath);
+                Controller.initConfig(password.getText(), savePath,fileName);
                 createMainScene();
             }
         });

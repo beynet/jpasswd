@@ -51,8 +51,8 @@ public class Controller {
         }
     }
 
-    public static void initConfig(String text, Path savePath) {
-        Config.initConfig(text, savePath);
+    public static void initConfig(String text, Path savePath,String fileName) {
+        Config.initConfig(text, savePath,fileName);
     }
 
     public final static Logger logger = Logger.getLogger(Controller.class);

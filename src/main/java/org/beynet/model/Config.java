@@ -23,10 +23,15 @@ import java.util.Observer;
  */
 public class Config implements Observer {
 
-    private Config(String password,Path savePath) {
+    private Config(String password,Path savePath,String fileName) {
         this.password = password;
         this.savePath=savePath;
-        this.saveFile = this.savePath.resolve(Paths.get(APPLICATION_FILE_NAME));
+        if (fileName==null) {
+            this.saveFile = this.savePath.resolve(Paths.get(APPLICATION_FILE_NAME));
+        }
+        else {
+            this.saveFile = this.savePath.resolve(Paths.get(fileName));
+        }
         try {
             Files.createDirectories(savePath);
         } catch (IOException e) {
@@ -41,10 +46,10 @@ public class Config implements Observer {
         this.store.addObserver(this);
     }
 
-    public static void initConfig(String password,Path savePath) {
+    public static void initConfig(String password,Path savePath,String fileName) {
         synchronized (Config.class) {
             if (_instance==null) {
-                _instance = new Config(password,savePath);
+                _instance = new Config(password,savePath,fileName);
             }
             else {
                 throw new RuntimeException("config already initialized");
@@ -58,6 +63,10 @@ public class Config implements Observer {
             throw new RuntimeException("config not initialized");
         }
         return _instance;
+    }
+
+    public String getFileName() {
+        return saveFile.getFileName().toString();
     }
 
     public void merge(byte[] content) throws IOException, PasswordMismatchException {
