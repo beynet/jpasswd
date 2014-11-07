@@ -27,7 +27,7 @@ public class Config implements Observer {
         this.password = password;
         this.savePath=savePath;
         if (fileName==null) {
-            this.saveFile = this.savePath.resolve(Paths.get(APPLICATION_FILE_NAME));
+            this.saveFile = this.savePath.resolve(Paths.get(APPLICATION_DEFAULT_FILE_NAME));
         }
         else {
             this.saveFile = this.savePath.resolve(Paths.get(fileName));
@@ -45,6 +45,7 @@ public class Config implements Observer {
         }
         this.store.addObserver(this);
     }
+
 
     public static void initConfig(String password,Path savePath,String fileName) {
         synchronized (Config.class) {
@@ -87,6 +88,12 @@ public class Config implements Observer {
     public void updateGoogleDriveRefreshToken(String refreshToken) {
         getPasswordStore().savePassword(new GoogleDrive(refreshToken));
     }
+
+    public void removeGoogleDrivePassword() {
+
+        getPasswordStore().removePassword(new GoogleDrive("t").getId());
+    }
+
     public String getGoogleDriveRefreshToken() {
         return getPasswordStore().getGoogleDriveRefreshToken();
     }
@@ -156,6 +163,7 @@ public class Config implements Observer {
     private String password;
     private static final String ALGO  = "AES";
 
-    public static final String APPLICATION_FILE_NAME = "jpasswd.dat";
+    public static final String APPLICATION_DEFAULT_FILE_NAME = "jpasswd.dat";
+
 
 }

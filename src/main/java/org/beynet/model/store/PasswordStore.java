@@ -57,8 +57,11 @@ public class PasswordStore extends Observable implements Serializable {
 
     public String getGoogleDriveRefreshToken() {
         synchronized (passwords) {
-            final GoogleDrive password = (GoogleDrive) passwords.get(GoogleDrive.GOOGLE_DRIVE_ID);
-            return password!=null?password.getRefreshToken():null;
+            final Password found = passwords.get(GoogleDrive.GOOGLE_DRIVE_ID);
+            if (found==null) return null;
+            if ( !(found instanceof GoogleDrive) ) return null;
+            final GoogleDrive password = (GoogleDrive) found;
+            return password.getRefreshToken();
         }
     }
 

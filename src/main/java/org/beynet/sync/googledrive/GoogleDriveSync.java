@@ -18,10 +18,16 @@ public class GoogleDriveSync implements Runnable {
 
     @Override
     public void run() {
-        GoogleDriveSyncState syncState = GoogleDriveSyncState.START;
-        while (!GoogleDriveSyncState.STOP.equals(syncState)) {
-            syncState=syncState.process(credentials);
-            if (Thread.currentThread().isInterrupted()) break;
+        Thread.currentThread().setName("GoogleDriveSync");
+        logger.info("!!!! start thread");
+        try {
+            GoogleDriveSyncState syncState = GoogleDriveSyncState.START;
+            while (!GoogleDriveSyncState.STOP.equals(syncState)) {
+                syncState = syncState.process(credentials);
+                if (Thread.currentThread().isInterrupted()) break;
+            }
+        } finally {
+            logger.info("!!!!! end of thread");
         }
     }
 

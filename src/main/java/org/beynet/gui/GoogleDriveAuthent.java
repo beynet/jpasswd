@@ -1,5 +1,6 @@
 package org.beynet.gui;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Button;
@@ -28,10 +29,9 @@ public class GoogleDriveAuthent extends Dialog {
         VBox root = new VBox();
         final WebView browser = new WebView();
         final WebEngine webEngine = browser.getEngine();
-        Button launch = new Button("launch");
-        launch.setOnAction(p->{
-            webEngine.load(authentURI);
-        });
+
+
+
         webEngine.locationProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue!=null && newValue.startsWith("http://localhost")) {
                 setCode.accept(getCodeFromURL(newValue));
@@ -41,8 +41,9 @@ public class GoogleDriveAuthent extends Dialog {
                 close();
             }
         });
-        root.getChildren().addAll(launch,browser);
+        root.getChildren().addAll(browser);
         getRootGroup().getChildren().add(root);
+        Platform.runLater(()->webEngine.load(authentURI));
     }
 
 

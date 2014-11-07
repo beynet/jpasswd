@@ -95,7 +95,6 @@ public class Main extends Application {
             passwordList.setPrefWidth(newValue.doubleValue() * 0.33);
         });
 
-        new Thread(new GoogleDriveSync(currentStage)).start();
     }
 
     @Override
@@ -181,7 +180,12 @@ public class Main extends Application {
                 new ChangeMainPassword(currentStage).show();
             });
 
-            passwords.getItems().addAll(generatePassword,changeMainPassword);
+
+            CheckMenuItem enableSyncToGoogleDrive = new GDriveSyncCheckMenu(currentStage,"Enable Sync to Google Drive");
+            enableSyncToGoogleDrive.setSelected(false);
+
+
+            passwords.getItems().addAll(generatePassword,changeMainPassword,enableSyncToGoogleDrive);
         }
 
 
