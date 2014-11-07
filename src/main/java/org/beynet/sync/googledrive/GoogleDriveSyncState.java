@@ -450,8 +450,8 @@ public enum GoogleDriveSyncState {
 
     private final static Logger logger = Logger.getLogger(GoogleDriveSyncState.class);
 
-    private final static String CLIENT_ID     = "630492774750-mdt07rqpebk8rjtpkc10a0m0308r5h9l.apps.googleusercontent.com";
-    private final static String CLIENT_SECRET = "YKM8hMJUEuAaQxUEoWfQ9TSV";
+    private final static String CLIENT_ID     = "73790136390-12qcthfps4lr641tdclq3irroi2pf9dh.apps.googleusercontent.com";
+    private final static String CLIENT_SECRET = "2cn_GFJrnHDNyNQHn69o-zHt";
     private final static String REDIRECT_URI  = "http://localhost";
 
     public final static String ACCESS_TOKEN   = "access_token";
