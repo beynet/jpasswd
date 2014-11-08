@@ -75,37 +75,82 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     @Override
     public void visit(PasswordModifiedOrCreated modif) {
         Password p = modif.getPassword();
-        if (p instanceof GoogleDrive) return;
-        synchronized (elements) {
-            final Password previousVersion = elements.get(p.getId());
+        p.accept(new PasswordVisitor() {
+            @Override
+            public void visit(WebLoginAndPassword t) {
+                updateList(false);
+            }
 
-            Platform.runLater(() -> {
-                if (previousVersion !=null) {
-                    elements.remove(previousVersion);
-                    getItems().remove(previousVersion);
+            @Override
+            public void visit(GoogleDrive t) {
+                return;
+            }
+
+            @Override
+            public void visit(PasswordString s) {
+                return;
+            }
+
+            @Override
+            public void visit(DeletedPassword s) {
+                updateList(true);
+            }
+
+            private void updateList(boolean thisIsADeletedPassword) {
+                synchronized (elements) {
+                    final Password previousVersion = elements.get(p.getId());
+                    Platform.runLater(() -> {
+                        if (previousVersion !=null) {
+                            elements.remove(previousVersion);
+                            getItems().remove(previousVersion);
+                        }
+                        if (thisIsADeletedPassword) return;
+                        elements.put(p.getId(),p);
+                        if (filter!=null) {
+                            final Map<String,Password> matching = Controller.getMatching(filter);
+                            if (matching.containsKey(p.getId())) getItems().add(p);
+                        }
+                        else {
+                            getItems().add(p);
+                        }
+                    });
                 }
-                if (p instanceof DeletedPassword) return;
-                elements.put(p.getId(),p);
-                if (filter!=null) {
-                    final Map<String,Password> matching = Controller.getMatching(filter);
-                    if (matching.containsKey(p.getId())) getItems().add(p);
-                }
-                else {
-                    getItems().add(p);
-                }
-            });
-        }
+            }
+        });
     }
 
     @Override
     public void visit(PasswordRemoved removed) {
         Password p = removed.getPassword();
-        if (p instanceof GoogleDrive) return;
-        String id = p.getId();
-        Platform.runLater(() -> {
-            Password toRemove=elements.remove(id);
-            if (toRemove!=null) getItems().remove(toRemove);
+        p.accept(new PasswordVisitor() {
+            @Override
+            public void visit(WebLoginAndPassword t) {
+                removePassword(t);
+            }
+
+            @Override
+            public void visit(GoogleDrive t) {
+                return;
+            }
+
+            @Override
+            public void visit(PasswordString s) {
+                return;
+            }
+
+            @Override
+            public void visit(DeletedPassword s) {
+                removePassword(s);
+            }
+            private void removePassword(Password p) {
+                String id = p.getId();
+                Platform.runLater(() -> {
+                    Password toRemove=elements.remove(id);
+                    if (toRemove!=null) getItems().remove(toRemove);
+                });
+            }
         });
+
     }
 
     public void updateFilter(String text) {
