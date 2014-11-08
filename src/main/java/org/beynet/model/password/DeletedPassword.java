@@ -33,6 +33,11 @@ public class DeletedPassword extends AbstractPassword implements Password {
     }
 
     @Override
+    public void unIndex(IndexWriter writer) throws IOException {
+
+    }
+
+    @Override
     public void accept(PasswordVisitor v) {
         v.visit(this);
     }

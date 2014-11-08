@@ -40,9 +40,10 @@ public class PasswordStore extends Observable implements Serializable {
      * @param id
      */
     public void removePassword(String id) {
+        final Password notify ;
+        final Password password ;
         synchronized (passwords) {
-            final Password notify ;
-            final Password password = passwords.remove(id);
+            password = passwords.remove(id);
             if (password!=null) {
                 notify = new DeletedPassword(password.getId());
                 passwords.put(id,notify);
@@ -53,18 +54,34 @@ public class PasswordStore extends Observable implements Serializable {
             setChanged();
             notifyObservers(new PasswordRemoved(notify));
         }
+        if (password!=null) {
+            try {
+                password.unIndex(writer);
+            } catch (IOException e) {
+                logger.error("error un indexing password",e);
+            }
+        }
     }
 
+    /**
+     * @return google drive refresh token if such a token exists in the data base or null
+     */
     public String getGoogleDriveRefreshToken() {
         synchronized (passwords) {
             final Password found = passwords.get(GoogleDrive.GOOGLE_DRIVE_ID);
             if (found==null) return null;
-            if ( !(found instanceof GoogleDrive) ) return null;
+            if ( !(found instanceof GoogleDrive) ) {
+                passwords.remove(GoogleDrive.GOOGLE_DRIVE_ID);
+            }
             final GoogleDrive password = (GoogleDrive) found;
             return password.getRefreshToken();
         }
     }
 
+    /**
+     * save an new password in the database
+     * @param p
+     */
     public void savePassword(Password p) {
         synchronized (passwords) {
             passwords.put(p.getId(), p);
@@ -75,6 +92,24 @@ public class PasswordStore extends Observable implements Serializable {
             p.index(writer);
         } catch (IOException e) {
             logger.error("error indexing password",e);
+        }
+    }
+
+    public void reIndexeLuceneDataBase() {
+        try {
+            writer.deleteAll();
+            writer.commit();
+        }catch(IOException e) {
+            logger.error("error occured during re indexation of the lucene database");
+        }
+        synchronized (passwords) {
+            for (Map.Entry<String,Password> entry:passwords.entrySet()) {
+                try {
+                    entry.getValue().index(writer);
+                } catch (Exception e) {
+                    logger.error("unable to index a password",e);
+                }
+            }
         }
     }
 

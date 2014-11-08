@@ -39,6 +39,13 @@ public class Controller {
         });
     }
 
+
+    public static void rebuildIndexes() {
+        Platform.runLater(() -> {
+            Config.getInstance().getPasswordStore().reIndexeLuceneDataBase();
+        });
+    }
+
     public static void disableGoogleDriveSync() {
         Platform.runLater(() -> {
             synchronized (Controller.class) {
@@ -94,7 +101,6 @@ public class Controller {
     }
 
     public final static Logger logger = Logger.getLogger(Controller.class);
-
 
 }
 

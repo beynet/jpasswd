@@ -54,7 +54,7 @@ public interface Password extends Serializable {
     public Password refresh(Password newValues);
 
     public void index(IndexWriter writer) throws IOException;
-
+    public void unIndex(IndexWriter writer) throws IOException;
 
     public void accept(PasswordVisitor v);
 

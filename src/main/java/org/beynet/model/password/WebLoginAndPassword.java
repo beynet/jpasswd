@@ -96,6 +96,16 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         password.accept(v);
     }
 
+
+    @Override
+    public void unIndex(IndexWriter writer) throws IOException {
+        // unindex previous version
+        Term idTerm = new Term(FIELD_ID,getId());
+        Query query = new TermQuery(idTerm);
+        writer.deleteDocuments(query);
+        writer.commit();
+    }
+
     @Override
     public void index(IndexWriter writer) throws IOException {
         // unindex previous version

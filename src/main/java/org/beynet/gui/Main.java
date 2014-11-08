@@ -165,11 +165,11 @@ public class Main extends Application {
             mainMenu.getItems().addAll( newWebSite, exit);
         }
 
-        // Password Menu
+        // Tools Menu
         // **************
         {
-            Menu passwords = new Menu("Tools");
-            menuBar.getMenus().add(passwords);
+            Menu tools = new Menu("Tools");
+            menuBar.getMenus().add(tools);
             MenuItem generatePassword = new MenuItem("Generate Password");
             generatePassword.setOnAction(t -> {
                 new GeneratePassword(currentStage).show();
@@ -180,12 +180,16 @@ public class Main extends Application {
                 new ChangeMainPassword(currentStage).show();
             });
 
+            MenuItem reIndexeLucene = new MenuItem("Rebuild indexes");
+            reIndexeLucene.setOnAction(t -> {
+                Controller.rebuildIndexes();
+            });
 
             CheckMenuItem enableSyncToGoogleDrive = new GDriveSyncCheckMenu(currentStage,"Enable Sync to Google Drive");
             enableSyncToGoogleDrive.setSelected(false);
 
 
-            passwords.getItems().addAll(generatePassword,changeMainPassword,enableSyncToGoogleDrive);
+            tools.getItems().addAll(generatePassword,changeMainPassword,enableSyncToGoogleDrive,reIndexeLucene);
         }
 
 
