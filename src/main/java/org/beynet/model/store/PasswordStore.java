@@ -211,33 +211,42 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
     public Map<String,Password> search(String query) throws IOException {
-        final IndexReader reader = createReader();
-        try {
-            IndexSearcher searcher = new IndexSearcher(reader);
-
-            BooleanQuery booleanQuery = new BooleanQuery();
-
-            Query patternQuery = new WildcardQuery(new Term(Password.FIELD_TXT,"*"+query+"*"));
-            booleanQuery.add(patternQuery, BooleanClause.Occur.MUST);
-
-            Map<String,Password> result = new HashMap<>();
+        if (query==null) {
+            Map<String, Password> result = new HashMap<>();
             synchronized (passwords) {
-
-                TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
-
-                searcher.search(booleanQuery, collector);
-                ScoreDoc[] hits = collector.topDocs().scoreDocs;
-
-                for (int i = 0; i < hits.length; ++i) {
-                    int docId = hits[i].doc;
-                    Document d = searcher.doc(docId);
-                    final Password password = passwords.get(d.get(Password.FIELD_ID));
-                    if (password!=null) result.put(password.getId(),password);
-                }
+                result.putAll(passwords);
             }
             return result;
-        }finally {
-            reader.close();
+        }
+        else {
+            final IndexReader reader = createReader();
+            try {
+                IndexSearcher searcher = new IndexSearcher(reader);
+
+                BooleanQuery booleanQuery = new BooleanQuery();
+
+                Query patternQuery = new WildcardQuery(new Term(Password.FIELD_TXT, "*" + query + "*"));
+                booleanQuery.add(patternQuery, BooleanClause.Occur.MUST);
+
+                Map<String, Password> result = new HashMap<>();
+                synchronized (passwords) {
+
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
+
+                    searcher.search(booleanQuery, collector);
+                    ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+                    for (int i = 0; i < hits.length; ++i) {
+                        int docId = hits[i].doc;
+                        Document d = searcher.doc(docId);
+                        final Password password = passwords.get(d.get(Password.FIELD_ID));
+                        if (password != null) result.put(password.getId(), password);
+                    }
+                }
+                return result;
+            } finally {
+                reader.close();
+            }
         }
     }
 

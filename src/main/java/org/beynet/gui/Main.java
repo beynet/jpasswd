@@ -82,15 +82,17 @@ public class Main extends Application {
         group.getChildren().add(pane);
 
         addMenuBar(pane);
-        addPasswordList(pane);
+//        addPasswordList(pane);
         addPasswordContent(pane);
+        addPasswordTree(pane);
 
 
 
         currentScene = new Scene(group, 640, 480);
         currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         currentStage.setScene(currentScene);
-        passwordList.setPrefWidth(currentStage.getWidth()*0.33);
+        if (passwordList!=null) passwordList.setPrefWidth(currentStage.getWidth()*0.33);
+        if (passwordTree!=null) passwordTree.setPrefWidth(currentStage.getWidth()*0.33);
         currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
             passwordList.setPrefWidth(newValue.doubleValue() * 0.33);
         });
@@ -108,6 +110,33 @@ public class Main extends Application {
     }
 
 
+    private void addPasswordTree(BorderPane pane) {
+        VBox box = new VBox();
+        TextField filter = new TextField();
+        filter.setPromptText("filter list");
+
+        // create list with a call back to be used
+        // to refresh passwordContentPane when selected passw has changed
+        // --------------------------------------------------------------
+
+        passwordTree = new PasswordTree(currentStage,newPasswd-> {
+            passwordContentPane.getChildren().clear();
+            if (newPasswd != null) {
+                newPasswd.accept(new PasswordDisplayer(passwordContentPane));
+            }
+        },passwordContentPane);
+        passwordTree.getStyleClass().add(Styles.PASSWD_TREE);
+        passwordTree.setPrefWidth(currentStage.getWidth() * 0.33);
+
+
+        filter.setOnKeyReleased((evt)->{
+            final String text = filter.getText();
+            passwordTree.updateFilter(text);
+        });
+
+        box.getChildren().addAll(filter, passwordTree);
+        pane.setLeft(box);
+    }
 
     private void addPasswordList(BorderPane pane) {
 
@@ -215,6 +244,7 @@ public class Main extends Application {
     private Stage currentStage;
     private Scene currentScene;
     private PasswordList passwordList;
+    private PasswordTree passwordTree;
     private GridPane passwordContentPane;
 
 }

@@ -5,6 +5,9 @@
 .passwdlist {
     -fx-border-color: darkred;
 }
+.passwdtree {
+    -fx-border-color: darkblue;
+}
 
 .content{
     -fx-border-color: yellow;
