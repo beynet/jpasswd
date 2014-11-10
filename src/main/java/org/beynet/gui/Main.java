@@ -85,7 +85,7 @@ public class Main extends Application {
 //        addPasswordList(pane);
         addPasswordContent(pane);
         addPasswordTree(pane);
-
+        addSyncStatus(pane);
 
 
         currentScene = new Scene(group, 640, 480);
@@ -102,6 +102,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         currentStage = primaryStage;
+        GoogleDriveSync.init(primaryStage);
         currentStage.setOnCloseRequest((t)->quitApp());
         setTitle();
 
@@ -173,6 +174,12 @@ public class Main extends Application {
         pane.setCenter(passwordContentPane);
     }
 
+
+    private void addSyncStatus(BorderPane pane) {
+        GoogleDriveVisualState state = new GoogleDriveVisualState();
+        pane.setBottom(state);
+
+    }
     private void addMenuBar(BorderPane pane) {
         final MenuBar menuBar = new MenuBar();
         menuBar.prefWidthProperty().bind(currentStage.widthProperty());

@@ -90,7 +90,6 @@ public class Config implements Observer {
     }
 
     public void removeGoogleDrivePassword() {
-
         getPasswordStore().removePassword(new GoogleDrive("t").getId());
     }
 

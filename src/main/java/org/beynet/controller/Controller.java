@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.beynet.gui.Alert;
+import org.beynet.gui.GoogleDriveVisualState;
 import org.beynet.model.Config;
 import org.beynet.model.password.Password;
 import org.beynet.sync.googledrive.GoogleDriveSync;
@@ -17,28 +18,29 @@ import java.util.*;
  */
 public class Controller {
 
-    private static GoogleDriveSync gdriveSync = null;
     private static Thread gdriveSyncThread = null;
 
     public static void enableGoogleDriveSync(Stage mainStage) {
         Platform.runLater(() -> {
             synchronized (Controller.class) {
-                if (gdriveSync == null) {
-                    //verify that previous thread is dead
-                    if (gdriveSyncThread!=null && gdriveSyncThread.isAlive()) {
-                        new Alert(mainStage,"previous gdrive thread is not dead").show();
-                        return;
-                    }
-                    else {
-                        gdriveSync = new GoogleDriveSync(mainStage);
-                        gdriveSyncThread = new Thread(gdriveSync);
-                        gdriveSyncThread.start();
-                    }
+                //verify that previous thread is dead
+                if (gdriveSyncThread!=null && gdriveSyncThread.isAlive()) {
+                    new Alert(mainStage,"previous gdrive thread is not dead").show();
+                    return;
+                }
+                else {
+                    gdriveSyncThread = new Thread(GoogleDriveSync.getInstance());
+                    gdriveSyncThread.start();
                 }
             }
         });
     }
 
+
+    public static void subscribeToGDriveSyncStatusChange(GoogleDriveVisualState googleDriveVisualState) {
+        GoogleDriveSync.getInstance().addObserver(googleDriveVisualState);
+        googleDriveVisualState.update(GoogleDriveSync.getInstance(),GoogleDriveSync.getInstance().getGoogleDriveSyncState());
+    }
 
     public static void rebuildIndexes() {
         Platform.runLater(() -> {
@@ -49,10 +51,9 @@ public class Controller {
     public static void disableGoogleDriveSync() {
         Platform.runLater(() -> {
             synchronized (Controller.class) {
-                if (gdriveSync != null) {
+                if (gdriveSyncThread != null && gdriveSyncThread.isAlive()) {
                     gdriveSyncThread.interrupt();
                     Config.getInstance().removeGoogleDrivePassword();
-                    gdriveSync=null;
                 }
             }
         });
@@ -101,7 +102,6 @@ public class Controller {
     }
 
     public final static Logger logger = Logger.getLogger(Controller.class);
-
 }
 
 

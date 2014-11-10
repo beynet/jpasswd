@@ -26,19 +26,29 @@ import java.util.Observer;
  * Created by beynet on 03/11/14.
  */
 public enum GoogleDriveSyncState {
+    // initial state
+    // -------------
     START {
         @Override
         public GoogleDriveSyncState _process(Map<String, Object> credentials) {
             String refreshToken = Config.getInstance().getGoogleDriveRefreshToken();
             if (refreshToken!=null) credentials.put(REFRESH_TOKEN,refreshToken);
-            return AUTHENT._process(credentials);
+            else credentials.remove(REFRESH_TOKEN);
+            return AUTHENT;
         }
     },
+
+    // this state is reponsible to verify
+    // that authentication with google drive servers is done
+    // -----------------------------------------------------
     AUTHENT {
         @Override
         public GoogleDriveSyncState _process(Map<String, Object> credentials) {
             logger.debug("AUTHENT");
             while (true) {
+                // no refresh token - first authent we will connect
+                // to google oauth systems using embedded web browser
+                // --------------------------------------------------
                 if (credentials.get(REFRESH_TOKEN) == null) {
                     logger.debug("no tokens first authent");
                     this.code = null;
@@ -47,7 +57,7 @@ public enum GoogleDriveSyncState {
                         retrieveAccessTokenAndRefreshTokenFromCode(credentials);
                         break;
                     } catch (Exception e) {
-                        // unexpected error - will retry
+                        credentials.remove(REFRESH_TOKEN);
                     }
                 } else if (credentials.get(ACCESS_TOKEN) == null) {
                     logger.debug("using refresh token found");
@@ -117,7 +127,13 @@ public enum GoogleDriveSyncState {
         }
         String code ;
     },
+
+    // in this state google drive backup is downloaded
+    // and then merged with current database
+    // ------------------------------------------------
     MERGE_WITH_REMOTE {
+        // search for expected file on gdrive
+        // -----------------------------------
         JsonNode searchApplicationFileId(Map<String,Object> credentials) throws IOException {
             logger.debug("search expected file on server");
             URL url ;
@@ -141,7 +157,7 @@ public enum GoogleDriveSyncState {
                         JsonNode fileNode = items.get(i);
                         final JsonNode title = fileNode.get("title");
                         final JsonNode id = fileNode.get("id");
-                        final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed");
+                        final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed"); // skipping file in trash
 
                         if (title!=null && id!=null && Config.getInstance().getFileName().equals(title.getTextValue()) &&
                             (explicitlyTrashed==null|| explicitlyTrashed.getBooleanValue()==false)
@@ -200,9 +216,17 @@ public enum GoogleDriveSyncState {
                     logger.error("unable to retrieve remote file",e);
                     return AUTHENT;
                 }
+                if (credentials.get(REFRESH_TOKEN)==null) return AUTHENT;
             }
+
             return SEND_FILE;
         }
+
+        /**
+         * downlaod backup file from drive and merge it with local file
+         * @param credentials
+         * @throws IOException
+         */
         private void mergeWithRemote(Map<String,Object> credentials) throws IOException {
             JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
             final String downloadUrlStr = remoteFile.get("downloadUrl").getTextValue();
@@ -243,6 +267,9 @@ public enum GoogleDriveSyncState {
             }
         }
     },
+
+    // SAVE database in google drive
+    // -----------------------------
     SEND_FILE {
         @Override
         public GoogleDriveSyncState _process(Map<String, Object> credentials)  {
@@ -339,6 +366,9 @@ public enum GoogleDriveSyncState {
             }
         }
     },
+
+    // wait for a change on local database
+    // -----------------------------------
     WAIT_FOR_CHANGE {
         @Override
         protected GoogleDriveSyncState _process(Map<String, Object> credentials) {
@@ -361,6 +391,9 @@ public enum GoogleDriveSyncState {
             return SEND_FILE;
         }
     },
+
+    // final state
+    // -----------
     STOP {
         @Override
         public GoogleDriveSyncState _process(Map<String, Object> credentials)  {
@@ -372,8 +405,8 @@ public enum GoogleDriveSyncState {
 
     public GoogleDriveSyncState process(Map<String, Object> credentials) {
         logger.debug("inter in process "+toString());
-        if (!this.equals(START) && credentials.get(ACCESS_TOKEN) == null) {
-            return AUTHENT._process(credentials);
+        if (!this.equals(START) && !this.equals(AUTHENT) && credentials.get(ACCESS_TOKEN) == null) {
+            return AUTHENT;
         }
         else return _process(credentials);
     }

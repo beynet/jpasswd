@@ -34,6 +34,10 @@ public class PasswordStore extends Observable implements Serializable {
 
     private static final long serialVersionUID = 774794719034730233L;
 
+    @Override
+    public void notifyObservers(Object arg) {
+        super.notifyObservers(arg);
+    }
 
     /**
      * remove password by id
@@ -41,25 +45,23 @@ public class PasswordStore extends Observable implements Serializable {
      */
     public void removePassword(String id) {
         final Password notify ;
-        final Password password ;
+        final Password found ;
         synchronized (passwords) {
-            password = passwords.remove(id);
-            if (password!=null) {
-                notify = new DeletedPassword(password.getId());
+            found = passwords.remove(id);
+            if (found!=null) {
+                notify = new DeletedPassword(found.getId());
                 passwords.put(id,notify);
             }
             else {
-                notify=password;
+                return;
             }
             setChanged();
             notifyObservers(new PasswordRemoved(notify));
         }
-        if (password!=null) {
-            try {
-                password.unIndex(writer);
-            } catch (IOException e) {
-                logger.error("error un indexing password",e);
-            }
+        try {
+            found.unIndex(writer);
+        } catch (IOException e) {
+            logger.error("error un indexing password",e);
         }
     }
 
@@ -72,6 +74,7 @@ public class PasswordStore extends Observable implements Serializable {
             if (found==null) return null;
             if ( !(found instanceof GoogleDrive) ) {
                 passwords.remove(GoogleDrive.GOOGLE_DRIVE_ID);
+                return null;
             }
             final GoogleDrive password = (GoogleDrive) found;
             return password.getRefreshToken();
