@@ -183,6 +183,7 @@ public class Main extends Application {
     private void addMenuBar(BorderPane pane) {
         final MenuBar menuBar = new MenuBar();
         menuBar.prefWidthProperty().bind(currentStage.widthProperty());
+        menuBar.setUseSystemMenuBar(true);
         pane.setTop(menuBar);
 
         // Main menu
