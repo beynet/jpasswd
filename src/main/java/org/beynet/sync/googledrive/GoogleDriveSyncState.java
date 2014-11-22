@@ -268,6 +268,46 @@ public enum GoogleDriveSyncState {
         }
     },
 
+
+    // state reached when last SEND_FILE has failed
+    RETRY_SEND_FILE {
+        @Override
+        protected GoogleDriveSyncState _process(Map<String, Object> credentials) {
+            while(true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return STOP;
+                }
+                logger.debug("RE SEND FILE");
+                byte[] file ;
+                try {
+                    file = Config.getInstance().getPasswordStore().getFileContent();
+                } catch (IOException e) {
+                    logger.error("unable to retrieve store file",e);
+                    return MERGE_WITH_REMOTE;
+                }
+                if (file!=null) {
+                    try {
+                        if (credentials.get(REMOTE_FILE) == null) {
+                            createNewFile(credentials, file);
+                        } else {
+                            modifyUploadedFile(credentials, file);
+                        }
+                        break;
+                    } catch (IOException e) {
+                        //authent lost
+                        if (credentials.get(ACCESS_TOKEN)==null) {
+                            return AUTHENT;
+                        }
+                    }
+                }
+            }
+            return WAIT_FOR_CHANGE;
+        }
+    },
+
     // SAVE database in google drive
     // -----------------------------
     SEND_FILE {
@@ -289,82 +329,17 @@ public enum GoogleDriveSyncState {
                         modifyUploadedFile(credentials, file);
                     }
                 } catch (IOException e) {
+                    if (credentials.get(ACCESS_TOKEN)!=null) {
+                        return RETRY_SEND_FILE;
+                    }
+                    else {
+                        return AUTHENT;
+                    }
                 }
             }
             return WAIT_FOR_CHANGE;
         }
-        private void writeString(OutputStream os,String toWrite) throws IOException {
-            os.write(toWrite.getBytes("UTF-8"));
-        }
-        /**
-         * method called to upload the file when this file does not already exist
-         * @param file
-         * @throws IOException
-         */
-        private void createNewFile(Map<String,Object> credentials,byte[] file) throws IOException {
-            URL r = new URL("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
-            uploadFile(credentials,file,r,"POST");
-        }
 
-        private void modifyUploadedFile(Map<String,Object> credentials,byte[] file) throws IOException {
-            JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
-            final String id = remoteFile.get("id").getTextValue();
-            URL r = new URL("https://www.googleapis.com/upload/drive/v2/files/"+id+"?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
-            logger.info("will update file id="+id);
-            uploadFile(credentials,file, r, "PUT");
-        }
-
-        private void uploadFile(Map<String,Object> credentials,byte[] file,URL r,String httpMethod) throws IOException {
-            ByteArrayOutputStream response = new ByteArrayOutputStream();
-            final String json ="{\"title\":\""+Config.getInstance().getFileName()+"\"}";
-            final String part ="jpasswd_part";
-
-            writeString(response, "--" + part + "\r\n");
-            writeString(response,"Content-Type: application/json; charset=UTF-8\r\n\r\n");
-            response.write(json.getBytes());
-            writeString(response, "\r\n--" + part + "\r\n");
-            writeString(response,"Content-Type: application/dat\r\n\r\n");
-            response.write(file);
-            writeString(response,"\r\n--"+part+"--\r\n");
-
-            final HttpURLConnection urlConnection = (HttpURLConnection) r.openConnection();
-            urlConnection.setRequestProperty("Content-Type","multipart/related; boundary=\""+part+"\"");
-            urlConnection.setRequestProperty("Content-Length",Integer.valueOf(response.size()).toString());
-            urlConnection.setRequestMethod(httpMethod);
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-
-            try (OutputStream os = urlConnection.getOutputStream()) {
-                os.write(response.toByteArray());
-            }
-            final int responseCode = urlConnection.getResponseCode();
-            if (responseCode<300) {
-                try(InputStream is =urlConnection.getInputStream()){
-                    final String jsonString = getJsonString(is);
-                    logger.debug("file uploaded - response ="+ jsonString);
-                    ObjectMapper mapper = new ObjectMapper();
-                    credentials.put(REMOTE_FILE, mapper.readTree(jsonString));
-                }
-            }
-            else {
-                InputStream is ;
-                if (responseCode>=400) {
-                    is = urlConnection.getErrorStream();
-                }
-                else {
-                    is = urlConnection.getInputStream();
-                }
-                try (InputStream is2 = is) {
-                    if (responseCode!=401) {
-                        final String error = getJsonString(is2);
-                        throw new IOException("Error received from serveur code=" + responseCode + " message=" + error);
-                    }
-                    else {
-                        credentials.remove(ACCESS_TOKEN);
-                    }
-                }
-            }
-        }
     },
 
     // wait for a change on local database
@@ -479,6 +454,79 @@ public enum GoogleDriveSyncState {
      */
     String getJsonString(InputStream is) throws IOException {
         return new String(readAllByte(is),"UTF-8");
+    }
+
+    private void writeString(OutputStream os,String toWrite) throws IOException {
+        os.write(toWrite.getBytes("UTF-8"));
+    }
+    /**
+     * method called to upload the file when this file does not already exist
+     * @param file
+     * @throws IOException
+     */
+    protected void createNewFile(Map<String,Object> credentials,byte[] file) throws IOException {
+        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
+        uploadFile(credentials,file,r,"POST");
+    }
+
+    protected void modifyUploadedFile(Map<String,Object> credentials,byte[] file) throws IOException {
+        JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
+        final String id = remoteFile.get("id").getTextValue();
+        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files/"+id+"?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
+        logger.info("will update file id="+id);
+        uploadFile(credentials,file, r, "PUT");
+    }
+
+    protected void uploadFile(Map<String,Object> credentials,byte[] file,URL r,String httpMethod) throws IOException {
+        ByteArrayOutputStream response = new ByteArrayOutputStream();
+        final String json ="{\"title\":\""+Config.getInstance().getFileName()+"\"}";
+        final String part ="jpasswd_part";
+
+        writeString(response, "--" + part + "\r\n");
+        writeString(response,"Content-Type: application/json; charset=UTF-8\r\n\r\n");
+        response.write(json.getBytes());
+        writeString(response, "\r\n--" + part + "\r\n");
+        writeString(response,"Content-Type: application/dat\r\n\r\n");
+        response.write(file);
+        writeString(response,"\r\n--"+part+"--\r\n");
+
+        final HttpURLConnection urlConnection = (HttpURLConnection) r.openConnection();
+        urlConnection.setRequestProperty("Content-Type","multipart/related; boundary=\""+part+"\"");
+        urlConnection.setRequestProperty("Content-Length",Integer.valueOf(response.size()).toString());
+        urlConnection.setRequestMethod(httpMethod);
+        urlConnection.setDoOutput(true);
+        urlConnection.setDoInput(true);
+
+        try (OutputStream os = urlConnection.getOutputStream()) {
+            os.write(response.toByteArray());
+        }
+        final int responseCode = urlConnection.getResponseCode();
+        if (responseCode<300) {
+            try(InputStream is =urlConnection.getInputStream()){
+                final String jsonString = getJsonString(is);
+                logger.debug("file uploaded - response ="+ jsonString);
+                ObjectMapper mapper = new ObjectMapper();
+                credentials.put(REMOTE_FILE, mapper.readTree(jsonString));
+            }
+        }
+        else {
+            InputStream is ;
+            if (responseCode>=400) {
+                is = urlConnection.getErrorStream();
+            }
+            else {
+                is = urlConnection.getInputStream();
+            }
+            try (InputStream is2 = is) {
+                if (responseCode!=401) {
+                    final String error = getJsonString(is2);
+                    throw new IOException("Error received from serveur code=" + responseCode + " message=" + error);
+                }
+                else {
+                    credentials.remove(ACCESS_TOKEN);
+                }
+            }
+        }
     }
 
     private final static Logger logger = Logger.getLogger(GoogleDriveSyncState.class);
