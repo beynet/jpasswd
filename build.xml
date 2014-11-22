@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ButtonDemo" default="default" basedir=".">        
+ <property environment="env" />
+    <taskdef name="bundleapp"
+             classname="com.oracle.appbundler.AppBundlerTask"   
+             classpath="lib/appbundler-1.0.jar"/>
+
+    <target name="bundle-jpasswd">
+        <bundleapp outputdirectory="target"
+            name="JPasswd"
+            displayname="JPasswd"
+            identifier="JPasswd"
+	    mainclassname="org.beynet.gui.Main">
+            <runtime dir="${env.JAVA_HOME}" />
+            <classpath file="target/jpasswd-1.0-SNAPSHOT-jar-with-dependencies.jar" />
+        </bundleapp>
+    </target>
+
+</project>
