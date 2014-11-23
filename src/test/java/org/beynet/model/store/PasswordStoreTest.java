@@ -1,5 +1,6 @@
 package org.beynet.model.store;
 
+import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.Password;
 import org.beynet.model.password.WebLoginAndPassword;
 import org.codehaus.jackson.JsonGenerationException;
@@ -29,7 +30,7 @@ public class PasswordStoreTest extends RootTest {
         return new WebLoginAndPassword(URI.create("http://fake-uri.fake"),"login","password");
     }
 
-    private PasswordStore writeAndReload(PasswordStore s) throws IOException, ClassNotFoundException {
+    private PasswordStore writeAndReload(PasswordStore s) throws IOException, ClassNotFoundException, MainPasswordError {
         Path temporaryFile =null;
         try {
             s.save();
@@ -46,7 +47,7 @@ public class PasswordStoreTest extends RootTest {
      * test that password added on remote is added on local store
      */
     @Test
-    public void mergePasswordAddedOnRemote() throws IOException, ClassNotFoundException {
+    public void mergePasswordAddedOnRemote() throws IOException, ClassNotFoundException, MainPasswordError {
         PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
         PasswordStore s2 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
@@ -71,7 +72,7 @@ public class PasswordStoreTest extends RootTest {
     }
 
     @Test
-    public void mergePasswordModifiedOnRemote() throws IOException, ClassNotFoundException {
+    public void mergePasswordModifiedOnRemote() throws IOException, ClassNotFoundException, MainPasswordError {
         PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
         PasswordStore s2 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
@@ -99,7 +100,7 @@ public class PasswordStoreTest extends RootTest {
     }
 
     @Test
-    public void mergePasswordModifiedOnLocal() throws IOException, ClassNotFoundException {
+    public void mergePasswordModifiedOnLocal() throws IOException, ClassNotFoundException, MainPasswordError {
         PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
         PasswordStore s2 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
@@ -130,7 +131,7 @@ public class PasswordStoreTest extends RootTest {
 
 
     @Test
-    public void search() throws IOException, ClassNotFoundException {
+    public void search() throws IOException, ClassNotFoundException, MainPasswordError {
         PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
         WebLoginAndPassword p1 = new WebLoginAndPassword(URI.create("http://www.google.fr"),"testeur","password");

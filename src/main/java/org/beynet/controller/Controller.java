@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.beynet.gui.Alert;
 import org.beynet.gui.GoogleDriveVisualState;
 import org.beynet.model.Config;
+import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.Password;
 import org.beynet.sync.googledrive.GoogleDriveSync;
 
@@ -97,7 +98,7 @@ public class Controller {
         }
     }
 
-    public static void initConfig(String text, Path savePath, String fileName) {
+    public static void initConfig(String text, Path savePath, String fileName) throws MainPasswordError {
         Config.initConfig(text, savePath, fileName);
     }
 

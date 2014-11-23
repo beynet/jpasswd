@@ -1,11 +1,14 @@
 package org.beynet.model;
 
 import javafx.application.Platform;
+import org.apache.log4j.Logger;
 import org.beynet.exceptions.PasswordMismatchException;
 import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.store.PasswordStore;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
@@ -23,7 +26,7 @@ import java.util.Observer;
  */
 public class Config implements Observer {
 
-    private Config(String password,Path savePath,String fileName) {
+    private Config(String password,Path savePath,String fileName) throws MainPasswordError {
         this.password = password;
         this.savePath=savePath;
         if (fileName==null) {
@@ -40,14 +43,15 @@ public class Config implements Observer {
 
         try {
             this.store = new PasswordStore(saveFile,this);
-        } catch (Exception e) {
-            throw new RuntimeException("unable to read database",e);
+        } catch (IOException e) {
+            logger.error("error reading password file",e);
+            throw new RuntimeException("error reading password file",e);
         }
         this.store.addObserver(this);
     }
 
 
-    public static void initConfig(String password,Path savePath,String fileName) {
+    public static void initConfig(String password,Path savePath,String fileName) throws MainPasswordError {
         synchronized (Config.class) {
             if (_instance==null) {
                 _instance = new Config(password,savePath,fileName);
@@ -74,10 +78,10 @@ public class Config implements Observer {
         final byte[] decrypt ;
         try {
             decrypt = decrypt(content);
-        } catch(Exception e) {
+        } catch(MainPasswordError e) {
             throw new PasswordMismatchException();
         }
-        final PasswordStore toMergeWith = new PasswordStore(decrypt, this);
+        final PasswordStore toMergeWith= new PasswordStore(decrypt, this);
         getPasswordStore().merge(toMergeWith);
     }
 
@@ -121,15 +125,20 @@ public class Config implements Observer {
         }
     }
 
-    public byte[] decrypt(byte[] from) throws RuntimeException {
+    public byte[] decrypt(byte[] from) throws RuntimeException, MainPasswordError {
+        final Cipher cipher;
         try {
             Key key = new SecretKeySpec(completeTo128Bits(password), ALGO);
-            Cipher cipher = Cipher.getInstance(ALGO);
+            cipher = Cipher.getInstance(ALGO);
 
             cipher.init(Cipher.DECRYPT_MODE, key);
-            return cipher.doFinal(from);
         }catch(Exception e) {
-            throw new RuntimeException("unable to decrypt",e);
+            throw new RuntimeException("unable to decrypt - configuration error ?",e);
+        }
+        try {
+            return cipher.doFinal(from);
+        } catch (Exception e) {
+            throw new MainPasswordError("error accessing database");
         }
     }
 
@@ -164,5 +173,5 @@ public class Config implements Observer {
 
     public static final String APPLICATION_DEFAULT_FILE_NAME = "jpasswd.dat";
 
-
+    private final static Logger logger = Logger.getLogger(Config.class);
 }

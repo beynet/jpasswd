@@ -1,6 +1,7 @@
 package org.beynet.model.store;
 
 import org.beynet.model.Config;
+import org.beynet.model.MainPasswordError;
 
 import java.nio.file.Paths;
 
@@ -9,6 +10,10 @@ import java.nio.file.Paths;
  */
 public class RootTest {
     static {
-        Config.initConfig("password", Paths.get(System.getProperty("java.io.tmpdir")),"jptest.dat");
+        try {
+            Config.initConfig("password", Paths.get(System.getProperty("java.io.tmpdir")),"jptest.dat");
+        } catch (MainPasswordError mainPasswordError) {
+            throw new RuntimeException(mainPasswordError);
+        }
     }
 }

@@ -11,6 +11,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.beynet.model.Config;
+import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.DeletedPassword;
 import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.password.Password;
@@ -174,14 +175,21 @@ public class PasswordStore extends Observable implements Serializable {
      * @throws IOException
      */
     public PasswordStore(byte[] fromMemory,Config config) throws IOException {
-        this(null,fromMemory,config);
+        try {
+            init(null, fromMemory, config);
+        } catch (MainPasswordError e) {
+            throw new RuntimeException("no such exception should be thrown there - programmatic error detected ?",e);
+        }
     }
 
-    public PasswordStore(Path fromFile,Config config) throws IOException {
-        this(fromFile,null,config);
+    public PasswordStore(Path fromFile,Config config) throws IOException,MainPasswordError {
+        init(fromFile, null, config);
     }
 
-    public PasswordStore(Path fromFile,byte[] fromMemory,Config config) throws IOException {
+    public PasswordStore(Path fromFile,byte[] fromMemory,Config config) throws IOException,MainPasswordError {
+        init(fromFile,fromMemory,config);
+    }
+    private void init(Path fromFile,byte[] fromMemory,Config config) throws IOException,MainPasswordError{
         this.storePath = fromFile;
         if (this.storePath!=null) {
             this.idxPath = this.storePath.getParent().resolve(storePath.getFileName() + ".idx");
@@ -258,7 +266,7 @@ public class PasswordStore extends Observable implements Serializable {
         if (this.writer!=null) this.writer.close();
     }
 
-    public PasswordStore(Path fromFile) throws IOException, ClassNotFoundException {
+    public PasswordStore(Path fromFile) throws IOException, ClassNotFoundException,MainPasswordError {
         this(fromFile,Config.getInstance());
     }
 

@@ -16,6 +16,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
+import org.beynet.model.MainPasswordError;
 import org.beynet.sync.googledrive.GoogleDriveSync;
 
 import java.nio.file.Files;
@@ -61,8 +62,12 @@ public class Main extends Application {
 
         ok.setOnAction(event -> {
             if (password.getText()!=null && !password.getText().isEmpty()) {
-                Controller.initConfig(password.getText(), savePath,fileName);
-                createMainScene();
+                try {
+                    Controller.initConfig(password.getText(), savePath,fileName);
+                    createMainScene();
+                } catch (MainPasswordError mainPasswordError) {
+                    new Alert(currentStage,"password error").show();
+                }
             }
         });
         pane.getChildren().addAll(passwordLabel,password,ok);
