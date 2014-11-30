@@ -1,6 +1,8 @@
 package org.beynet.gui;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -32,10 +34,22 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
 
         TreeItem<PasswordOrFolderTreeNode> rootTreeItem = new TreeItem<>(new FolderTreeNode("/"));
         rootTreeItem.setExpanded(true);
+        rootTreeItem.expandedProperty().addListener((observable, oldValue, newValue) -> {
+            rootTreeItem.getValue().setExpanded(newValue);
+        });
+
         webPasswords=new TreeItem<>(new FolderTreeNode("Web passwords"));
+        webPasswords.setExpanded(true);
+        webPasswords.expandedProperty().addListener((observable, oldValue, newValue) -> {
+            webPasswords.getValue().setExpanded(newValue);
+        });
+
+
         notes=new TreeItem<>(new FolderTreeNode("notes"));
         notes.setExpanded(true);
-        webPasswords.setExpanded(true);
+        notes.expandedProperty().addListener((observable, oldValue, newValue) -> {
+            notes.getValue().setExpanded(newValue);
+        });
         rootTreeItem.getChildren().add(webPasswords);
         rootTreeItem.getChildren().add(notes);
 

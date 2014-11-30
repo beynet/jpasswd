@@ -24,6 +24,11 @@ public class PasswordTreeNode implements PasswordOrFolderTreeNode {
         return null;
     }
 
+    @Override
+    public void setExpanded(Boolean newValue) {
+
+    }
+
     public String getText() {
         return password.getSummary();
     }

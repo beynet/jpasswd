@@ -22,4 +22,6 @@ public interface PasswordOrFolderTreeNode {
     public void onDoubleClick(Stage parent);
 
     void display(Consumer<Password> selectedPasswordChange);
+
+    void setExpanded(Boolean newValue);
 }

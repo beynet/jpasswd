@@ -14,13 +14,23 @@ import java.util.function.Consumer;
 public class FolderTreeNode implements PasswordOrFolderTreeNode {
     public FolderTreeNode(String folderName) {
         this.folderName = folderName;
+        imageView = new ImageView(folderOpen);
+        imageView.setFitWidth(24);
+        imageView.setFitHeight(24);
     }
 
     public ImageView getImageView() {
-        ImageView imageView = new ImageView(folder);
-        imageView.setFitWidth(24);
-        imageView.setFitHeight(24);
         return imageView;
+    }
+
+    @Override
+    public void setExpanded(Boolean newValue) {
+        if (newValue==true) {
+            imageView.setImage(folderOpen);
+        }
+        else {
+            imageView.setImage(folder);
+        }
     }
 
     @Override
@@ -49,5 +59,7 @@ public class FolderTreeNode implements PasswordOrFolderTreeNode {
     }
 
     private String folderName;
+    private ImageView imageView;
     private static final Image folder = new Image(PasswordOrFolderTreeNode.class.getResourceAsStream("/Folder.png"));
+    private static final Image folderOpen = new Image(PasswordOrFolderTreeNode.class.getResourceAsStream("/Folder_Open.png"));
 }
