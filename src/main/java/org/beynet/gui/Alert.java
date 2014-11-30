@@ -29,7 +29,6 @@ public class Alert extends DialogModal {
         //grid.setPadding(new Insets(5));
         grid.setHgap(5);
         grid.setVgap(5);
-        grid.getStyleClass();
 
 
 
