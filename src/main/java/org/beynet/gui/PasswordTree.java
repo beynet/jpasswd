@@ -37,6 +37,8 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
         rootTreeItem.setExpanded(true);
         webPasswords=new TreeItem<>(new FolderTreeNode("Web passwords"));
         notes=new TreeItem<>(new FolderTreeNode("notes"));
+        notes.setExpanded(true);
+        webPasswords.setExpanded(true);
         rootTreeItem.getChildren().add(webPasswords);
         rootTreeItem.getChildren().add(notes);
 
