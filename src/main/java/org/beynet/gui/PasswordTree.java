@@ -94,6 +94,25 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
             }
 
             @Override
+            public void visit(Note note) {
+                TreeItem<PasswordOrFolderTreeNode> toRemove = null;
+                for (TreeItem<PasswordOrFolderTreeNode> child : notes.getChildren()) {
+                    if (child.getValue().match(note)) {
+                        toRemove = child;
+                        break;
+                    }
+                }
+                if (toRemove != null) notes.getChildren().remove(toRemove);
+                if (filter!=null) {
+                    final Map<String,Password> matching = Controller.getMatching(filter);
+                    if (matching.containsKey(note.getId())) notes.getChildren().add(new TreeItem<>(new PasswordTreeNode(note)));
+                }
+                else {
+                    notes.getChildren().add(new TreeItem<>(new PasswordTreeNode(note)));
+                }
+            }
+
+            @Override
             public void visit(GoogleDrive t) {
 
             }
@@ -121,8 +140,12 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
         Password p = removed.getPassword();
         p.accept(new PasswordVisitor() {
             @Override
+            public void visit(Note note) {
+
+            }
+            @Override
             public void visit(WebLoginAndPassword t) {
-                removePassword(t);
+
             }
 
             @Override
@@ -136,22 +159,32 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
             }
 
             @Override
-            public void visit(DeletedPassword s) {
-                removePassword(s);
-            }
-            private void removePassword(Password p) {
-                String id = p.getId();
-                ObservableList<TreeItem<PasswordOrFolderTreeNode>> children = webPasswords.getChildren();
-                for (TreeItem<PasswordOrFolderTreeNode> child : children) {
-                    if (child.getValue().match(p)) {
-                        Platform.runLater(() -> {
-                            children.remove(child);
-                        });
-                        break;
+            public void visit(DeletedPassword t) {
+                {
+                    ObservableList<TreeItem<PasswordOrFolderTreeNode>> children = webPasswords.getChildren();
+                    for (TreeItem<PasswordOrFolderTreeNode> child : children) {
+                        if (child.getValue().match(t)) {
+                            Platform.runLater(() -> {
+                                children.remove(child);
+                            });
+                            break;
+                        }
                     }
                 }
 
+                {
+                    ObservableList<TreeItem<PasswordOrFolderTreeNode>> children = notes.getChildren();
+                    for (TreeItem<PasswordOrFolderTreeNode> child : children) {
+                        if (child.getValue().match(t)) {
+                            Platform.runLater(() -> {
+                                children.remove(child);
+                            });
+                            break;
+                        }
+                    }
+                }
             }
+
         });
     }
 

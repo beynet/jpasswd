@@ -48,6 +48,11 @@ public class PasswordTreeNode implements PasswordOrFolderTreeNode {
             }
 
             @Override
+            public void visit(Note note) {
+
+            }
+
+            @Override
             public void visit(GoogleDrive t) {
 
             }

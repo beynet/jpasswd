@@ -13,4 +13,5 @@ public interface PasswordVisitor {
 
     public void visit(DeletedPassword s);
 
+    public void visit(Note note);
 }

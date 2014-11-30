@@ -31,7 +31,7 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         this.login    = login ;
         this.password = new PasswordString(password);
     }
-    public WebLoginAndPassword(String id,URI uri,String login,String password) throws IllegalArgumentException {
+    protected WebLoginAndPassword(String id,URI uri,String login,String password) throws IllegalArgumentException {
         super(id);
         if (uri==null) throw new IllegalArgumentException("uri must not be null");
         if (login==null) throw new IllegalArgumentException("login must not be null");
@@ -94,16 +94,6 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
     public void accept(PasswordVisitor v) {
         v.visit(this);
         password.accept(v);
-    }
-
-
-    @Override
-    public void unIndex(IndexWriter writer) throws IOException {
-        // unindex previous version
-        Term idTerm = new Term(FIELD_ID,getId());
-        Query query = new TermQuery(idTerm);
-        writer.deleteDocuments(query);
-        writer.commit();
     }
 
     @Override

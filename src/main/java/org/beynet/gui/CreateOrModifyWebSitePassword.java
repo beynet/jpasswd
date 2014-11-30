@@ -71,12 +71,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
             }
 
             WebLoginAndPassword newP = new WebLoginAndPassword(uriCreated,login.getText(),passwordT.getText());
-            if (this.password==null) {
-                Controller.notifyPasswordModified(newP);
-            }
-            else {
-                Controller.notifyPasswordModified(this.password.refresh(newP));
-            }
+            Controller.notifyPasswordModified(this.password,newP);
             close();
         });
 

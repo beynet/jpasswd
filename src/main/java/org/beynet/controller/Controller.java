@@ -84,9 +84,14 @@ public class Controller {
         });
     }
 
-    public static void notifyPasswordModified(Password p) {
+    public static void notifyPasswordModified(Password previousValue,Password newValue) {
         Platform.runLater(() -> {
-            Config.getInstance().getPasswordStore().savePassword(p);
+            if (previousValue==null) {
+                Config.getInstance().getPasswordStore().savePassword(newValue);
+            }
+            else {
+                Config.getInstance().getPasswordStore().savePassword(previousValue.refresh(newValue));
+            }
         });
     }
 

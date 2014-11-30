@@ -1,5 +1,11 @@
 package org.beynet.model.password;
 
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -49,6 +55,15 @@ public abstract class AbstractPassword implements Password {
     @Override
     public Long getModified() {
         return modified;
+    }
+
+    @Override
+    public void unIndex(IndexWriter writer) throws IOException {
+        // unindex previous version
+        Term idTerm = new Term(FIELD_ID,getId());
+        Query query = new TermQuery(idTerm);
+        writer.deleteDocuments(query);
+        writer.commit();
     }
 
     private Long modified ;

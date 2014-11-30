@@ -2,6 +2,7 @@ package org.beynet.gui;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -24,6 +25,24 @@ public class PasswordDisplayer implements PasswordVisitor {
     @Override
     public void visit(DeletedPassword t) {
         
+    }
+
+    @Override
+    public void visit(Note t) {
+        if (pane.getChildren()!=null) pane.getChildren().clear();
+        Label labelTitle = new Label("title");
+        TextField title = new TextField(t.getTitle());
+        title.setEditable(false);
+
+        Label labelContent = new Label("content");
+        TextArea content = new TextArea(t.getContent());
+        content.setEditable(false);
+
+
+        pane.add(labelTitle,0,0);
+        pane.add(title,1,0);
+        pane.add(labelContent,0,1);
+        pane.add(content,0,2,4,10);
     }
 
     @Override

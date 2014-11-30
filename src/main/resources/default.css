@@ -12,6 +12,7 @@
 .content{
     -fx-border-color: yellow;
 }
+
 .alert {
     -fx-fill: darkred;
     -fx-text-fill: darkred;

@@ -177,6 +177,8 @@ public class Main extends Application {
         passwordContentPane = new GridPane();
         passwordContentPane.getStyleClass().add(Styles.PASSWORD_CONTENT);
         pane.setCenter(passwordContentPane);
+        passwordContentPane.prefWidthProperty().bind(this.currentScene.widthProperty());
+
     }
 
 
@@ -204,7 +206,10 @@ public class Main extends Application {
             MenuItem newWebSite = new MenuItem("Add Web Site");
             newWebSite.setOnAction(t -> new CreateOrModifyWebSitePassword(currentStage).show());
 
-            mainMenu.getItems().addAll( newWebSite, exit);
+            MenuItem newNote = new MenuItem("Add Note");
+            newNote.setOnAction(t -> new CreateOrModifyNote(currentStage).show());
+
+            mainMenu.getItems().addAll( newWebSite, newNote,exit);
         }
 
         // Tools Menu

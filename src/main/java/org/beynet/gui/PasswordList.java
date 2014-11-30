@@ -51,6 +51,11 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                             }
 
                             @Override
+                            public void visit(Note note) {
+                                new CreateOrModifyNote(parent,note).show();
+                            }
+
+                            @Override
                             public void visit(GoogleDrive t) {
 
                             }
@@ -76,6 +81,10 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     public void visit(PasswordModifiedOrCreated modif) {
         Password p = modif.getPassword();
         p.accept(new PasswordVisitor() {
+            @Override
+            public void visit(Note note) {
+
+            }
             @Override
             public void visit(WebLoginAndPassword t) {
                 updateList(false);
@@ -123,6 +132,10 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     public void visit(PasswordRemoved removed) {
         Password p = removed.getPassword();
         p.accept(new PasswordVisitor() {
+            @Override
+            public void visit(Note note) {
+
+            }
             @Override
             public void visit(WebLoginAndPassword t) {
                 removePassword(t);
