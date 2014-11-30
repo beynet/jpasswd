@@ -49,7 +49,7 @@ public class PasswordTreeNode implements PasswordOrFolderTreeNode {
 
             @Override
             public void visit(Note note) {
-
+                new CreateOrModifyNote(parent,note).show();
             }
 
             @Override

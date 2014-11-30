@@ -2,14 +2,12 @@ package org.beynet.gui;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import org.beynet.controller.Controller;
 import org.beynet.model.password.*;
 import org.beynet.model.store.PasswordModifiedOrCreated;
@@ -17,7 +15,6 @@ import org.beynet.model.store.PasswordRemoved;
 import org.beynet.model.store.PasswordStoreEvent;
 import org.beynet.model.store.PasswordStoreEventVisitor;
 
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -63,7 +60,6 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
                     if (selectedIndex >= 0) {
                         TreeItem<PasswordOrFolderTreeNode> itemSelected = getSelectionModel().getSelectedItem();
                         itemSelected.getValue().onDoubleClick(parent);
-
                     }
                 }
             }

@@ -26,24 +26,23 @@ public class CreateOrModifyNote extends Dialog {
         this.note = note;
 
         Text titleL    = new Text("note title");
-        Text contentL = new Text("note contente");
+        Text contentL = new Text("note content");
 
 
         final String titlePrompt ="note title";
-        final String contentPrompt ="note contente";
+        final String contentPrompt ="note content";
 
         TextField title=new TextField();
         title.setMinWidth(titleL.getLayoutBounds().getWidth()*5);
         title.setPromptText(titlePrompt);
 
-        TextArea contente = new TextArea();
-
-
+        TextArea content = new TextArea();
+        content.setPromptText(contentPrompt);
 
 
         if (this.note!=null) {
             title.setText(this.note.getTitle());
-            contente.setText(this.note.getContent());
+            content.setText(this.note.getContent());
         }
 
         Button confirm = new Button("save");
@@ -54,12 +53,12 @@ public class CreateOrModifyNote extends Dialog {
                 return;
             }
 
-            if (contente.getText()==null||contente.getText().isEmpty()) {
-                new Alert(this,"contente MUST not be empty").show();
+            if (content.getText()==null||content.getText().isEmpty()) {
+                new Alert(this,"content MUST not be empty").show();
                 return;
             }
 
-            Note newNote = new Note(title.getText(),contente.getText());
+            Note newNote = new Note(title.getText(),content.getText());
             Controller.notifyPasswordModified(this.note,newNote);
             close();
         });
@@ -67,6 +66,7 @@ public class CreateOrModifyNote extends Dialog {
 
         GridPane grid = new GridPane();
         grid.prefWidthProperty().bind(getCurrentScene().widthProperty());
+        content.prefWidthProperty().bind(grid.widthProperty());
         grid.setPadding(new Insets(5));
         grid.setHgap(5);
         grid.setVgap(5);
@@ -74,7 +74,7 @@ public class CreateOrModifyNote extends Dialog {
         grid.add(titleL,0,0);
         grid.add(title,1,0);
         grid.add(contentL,0,1);
-        grid.add(contente,0,2,4,10);
+        grid.add(content,0,2,4,10);
 
         grid.add(confirm,0,12);
 

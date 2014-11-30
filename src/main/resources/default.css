@@ -3,12 +3,12 @@
 }
 
 .passwdlist {
-    -fx-border-color: darkred;
 }
 .passwdtree {
-    -fx-border-color: darkblue;
 }
 
+.password_content {
+}
 .content{
     -fx-border-color: yellow;
 }
@@ -16,7 +16,4 @@
 .alert {
     -fx-fill: darkred;
     -fx-text-fill: darkred;
-}
-.proposal {
-    -fx-text-fill: lightgray;
 }

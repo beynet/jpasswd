@@ -15,7 +15,6 @@ public abstract class Dialog  extends Stage {
     public Dialog(Stage parent,Double with,Double height) {
         this.parent = parent;
         root = new Group();
-        root.getStyleClass().add(Styles.CHILD_WINDOW);
 
         if (with!=null && height!=null) {
             scene = new Scene(root, with, height);
@@ -23,6 +22,7 @@ public abstract class Dialog  extends Stage {
             scene = new Scene(root);
         }
         scene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
+        root.getStyleClass().add(Styles.CHILD_WINDOW);
 
         setScene(scene);
 

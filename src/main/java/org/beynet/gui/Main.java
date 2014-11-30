@@ -2,6 +2,8 @@ package org.beynet.gui;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -96,11 +98,6 @@ public class Main extends Application {
         currentScene = new Scene(group, 640, 480);
         currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         currentStage.setScene(currentScene);
-        if (passwordList!=null) passwordList.setPrefWidth(currentStage.getWidth()*0.33);
-        if (passwordTree!=null) passwordTree.setPrefWidth(currentStage.getWidth()*0.33);
-        currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
-            passwordList.setPrefWidth(newValue.doubleValue() * 0.33);
-        });
 
     }
 
@@ -132,12 +129,19 @@ public class Main extends Application {
             }
         },passwordContentPane);
         passwordTree.getStyleClass().add(Styles.PASSWD_TREE);
-        passwordTree.setPrefWidth(currentStage.getWidth() * 0.33);
-
 
         filter.setOnKeyReleased((evt)->{
             final String text = filter.getText();
             passwordTree.updateFilter(text);
+        });
+
+
+        passwordTree.setPrefWidth(currentStage.getWidth() * 0.33);
+        currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
+            passwordTree.setPrefWidth(newValue.doubleValue() * 0.33);
+        });
+        currentStage.heightProperty().addListener((observable, oldValue, newValue) -> {
+            passwordTree.setPrefHeight(newValue.doubleValue() - 90);
         });
 
         box.getChildren().addAll(filter, passwordTree);
@@ -169,6 +173,11 @@ public class Main extends Application {
             passwordList.updateFilter(text);
         });
 
+        passwordList.setPrefWidth(currentStage.getWidth() * 0.33);
+        currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
+            passwordList.setPrefWidth(newValue.doubleValue() * 0.33);
+        });
+
         box.getChildren().addAll(filter, passwordList);
         pane.setLeft(box);
     }
@@ -177,7 +186,10 @@ public class Main extends Application {
         passwordContentPane = new GridPane();
         passwordContentPane.getStyleClass().add(Styles.PASSWORD_CONTENT);
         pane.setCenter(passwordContentPane);
-        passwordContentPane.prefWidthProperty().bind(this.currentScene.widthProperty());
+        passwordContentPane.setPadding(new Insets(5));
+        currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
+            passwordContentPane.setPrefWidth(newValue.doubleValue() * 0.65);
+        });
 
     }
 
@@ -185,6 +197,9 @@ public class Main extends Application {
     private void addSyncStatus(BorderPane pane) {
         GoogleDriveVisualState state = new GoogleDriveVisualState();
         pane.setBottom(state);
+        state.setMaxHeight(40);
+        state.setPrefHeight(40);
+        BorderPane.setAlignment(state, Pos.BOTTOM_LEFT);
 
     }
     private void addMenuBar(BorderPane pane) {
