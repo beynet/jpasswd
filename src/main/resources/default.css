@@ -6,13 +6,28 @@
 }
 .passwdtree {
 }
+.content {
+    -fx-background-color: lightgray, white;
+}
 
+.content:focused {
+    -fx-background-color: black, white;
+}
 
+/*.content:hover {
+    -fx-background-insets:0,1;
+    -fx-background-color: lightgray, white;
+}
+
+.content:focused:hover {
+    -fx-background-insets:0,1;
+    -fx-background-color: black, white;
+}
+*/
 .password_content {
 }
-.content{
-    -fx-border-color: yellow;
-}
+
+
 
 .alert {
     -fx-fill: darkred;

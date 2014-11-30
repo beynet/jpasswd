@@ -36,6 +36,7 @@ public class PasswordDisplayer implements PasswordVisitor {
 
         Label labelContent = new Label("content");
         TextArea content = new TextArea(t.getContent());
+        content.getStyleClass().addAll("content");
         content.prefWidthProperty().bind(pane.widthProperty());
         content.setEditable(false);
 

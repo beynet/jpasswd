@@ -37,6 +37,7 @@ public class CreateOrModifyNote extends Dialog {
         title.setPromptText(titlePrompt);
 
         TextArea content = new TextArea();
+        content.getStyleClass().addAll("content");
         content.setPromptText(contentPrompt);
 
 
