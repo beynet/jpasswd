@@ -1,6 +1,7 @@
 package org.beynet.gui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -17,11 +18,16 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
 import org.beynet.model.MainPasswordError;
+import org.beynet.model.password.*;
+import org.beynet.model.store.*;
 import org.beynet.sync.googledrive.GoogleDriveSync;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.function.Consumer;
 
 public class Main extends Application {
 
@@ -254,6 +260,69 @@ public class Main extends Application {
                 new ChangeMainPassword(currentStage).show();
             });
 
+            // add menu to clear deleted passwords
+            final String label = "Compress DataBase (VAL)";
+            MenuItem compress = new MenuItem(label.replaceFirst("VAL","0"));
+            compress.setOnAction(t->{
+                Controller.compressDatabase(currentStage);
+            });
+            final int[] deleted = {0};
+
+            Consumer<Integer> changeLabel = (i)->{
+                Platform.runLater(() -> compress.setText(label.replaceFirst("VAL",""+i)));
+            };
+
+            Observer countDeletedPasswords= (o, passwordStoreEvent) -> {
+                PasswordStoreEventVisitor storeEvent = new PasswordStoreEventVisitor() {
+                    @Override
+                    public void visit(PasswordRemoved r) {
+                        deleted[0]++;
+                        changeLabel.accept(deleted[0]);
+                    }
+
+                    @Override
+                    public void visit(PasswordDefinitivelyRemoved r) {
+                        deleted[0]--;
+                        changeLabel.accept(deleted[0]);
+                    }
+                    @Override
+                    public void visit(PasswordModifiedOrCreated p) {
+                        PasswordVisitor countDeleted = new PasswordVisitor() {
+                            @Override
+                            public void visit(WebLoginAndPassword t) {
+
+                            }
+
+                            @Override
+                            public void visit(GoogleDrive t) {
+
+                            }
+
+                            @Override
+                            public void visit(PasswordString s) {
+
+                            }
+
+                            @Override
+                            public void visit(DeletedPassword s) {
+                                deleted[0]++;
+                                changeLabel.accept(deleted[0]);
+                            }
+
+                            @Override
+                            public void visit(Note note) {
+
+                            }
+                        };
+                        p.getPassword().accept(countDeleted);
+                    }
+                };
+                ((PasswordStoreEvent)passwordStoreEvent).accept(storeEvent);
+
+            };
+            Controller.suscribeToPassword(countDeletedPasswords);
+
+
             MenuItem reIndexeLucene = new MenuItem("Rebuild indexes");
             reIndexeLucene.setOnAction(t -> {
                 Controller.rebuildIndexes();
@@ -263,7 +332,7 @@ public class Main extends Application {
             enableSyncToGoogleDrive.setSelected(false);
 
 
-            tools.getItems().addAll(generatePassword, changeMainPassword, enableSyncToGoogleDrive, reIndexeLucene);
+            tools.getItems().addAll(generatePassword, changeMainPassword, enableSyncToGoogleDrive, reIndexeLucene,compress);
         }
 
 

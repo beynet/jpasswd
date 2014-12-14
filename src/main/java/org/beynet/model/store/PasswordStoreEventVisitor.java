@@ -5,5 +5,6 @@ package org.beynet.model.store;
  */
 public interface PasswordStoreEventVisitor {
     void visit(PasswordRemoved r);
+    void visit(PasswordDefinitivelyRemoved r);
     void visit(PasswordModifiedOrCreated p);
 }

@@ -49,6 +49,16 @@ public class Controller {
         });
     }
 
+    /**
+     * remove all deleted passwords from database
+     */
+    public static void compressDatabase(Stage mainStage) {
+        Platform.runLater(()->{
+            int total = Config.getInstance().getPasswordStore().removeDeletedPasswords();
+            new Alert(mainStage,total+" password has been removed").show();
+        });
+    }
+
     public static void disableGoogleDriveSync() {
         Platform.runLater(() -> {
             synchronized (Controller.class) {
@@ -60,6 +70,10 @@ public class Controller {
         });
     }
 
+    /**
+     * subsribe to changes from password database
+     * @param suscriber
+     */
     public static void suscribeToPassword(Observer suscriber) {
         Platform.runLater(() -> {
             Config.getInstance().getPasswordStore().addObserver(suscriber);
