@@ -1,14 +1,12 @@
 package org.beynet.gui;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -29,31 +27,30 @@ public class Main extends Application {
 
     private static Path savePath;
     private static String fileName;
-    public static void main(String...args) {
+
+    public static void main(String... args) {
         BasicConfigurator.configure();
         Logger.getRootLogger().setLevel(Level.DEBUG);
-        if (args.length==0) {
+        if (args.length == 0) {
             Path userHome = Paths.get((String) System.getProperty("user.home"));
             savePath = userHome.resolve(".jpasswd");
-            fileName=null;
-        }
-        else {
+            fileName = null;
+        } else {
             Path userHome = Paths.get(args[0]);
-            if (!Files.exists(userHome)) throw new RuntimeException("path "+userHome+" does not exist");
+            if (!Files.exists(userHome)) throw new RuntimeException("path " + userHome + " does not exist");
             savePath = userHome.resolve(".jpasswd");
-            if (args.length==2) {
-                fileName=args[1];
-            }
-            else {
-                fileName=null;
+            if (args.length == 2) {
+                fileName = args[1];
+            } else {
+                fileName = null;
             }
         }
         launch(args);
     }
 
 
-    private void createAskPassword(String ...args) {
-        Group group  = new Group();
+    private void createAskPassword(String... args) {
+        Group group = new Group();
 
         HBox pane = new HBox();
         group.getChildren().add(pane);
@@ -62,17 +59,31 @@ public class Main extends Application {
         final Label passwordLabel = new Label("password :");
         final Button ok = new Button("ok");
 
-        ok.setOnAction(event -> {
-            if (password.getText()!=null && !password.getText().isEmpty()) {
-                try {
-                    Controller.initConfig(password.getText(), savePath,fileName);
-                    createMainScene();
-                } catch (MainPasswordError mainPasswordError) {
-                    new Alert(currentStage,"password error").show();
-                }
+
+        // if password is OK print main scene
+        // else display an error
+        // ----------------------------------
+        Runnable checkIt =  ()-> {
+            try {
+                Controller.initConfig(password.getText(), savePath, fileName);
+                createMainScene();
+            } catch (MainPasswordError mainPasswordError) {
+                new Alert(currentStage, "password error").show();
+            }
+        };
+
+        password.setOnKeyReleased(keyEvent -> {
+            if (KeyCode.ENTER.equals(keyEvent.getCode())) {
+                checkIt.run();
             }
         });
-        pane.getChildren().addAll(passwordLabel,password,ok);
+
+        ok.setOnAction((event) -> {
+            if (password.getText() != null && !password.getText().isEmpty()) {
+                checkIt.run();
+            }
+        });
+        pane.getChildren().addAll(passwordLabel, password, ok);
 
         currentScene = new Scene(group);
         currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
@@ -81,7 +92,7 @@ public class Main extends Application {
     }
 
     private void createMainScene() {
-        Group group  = new Group();
+        Group group = new Group();
 
         BorderPane pane = new BorderPane();
 
@@ -105,7 +116,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         currentStage = primaryStage;
         GoogleDriveSync.init(primaryStage);
-        currentStage.setOnCloseRequest((t)->quitApp());
+        currentStage.setOnCloseRequest((t) -> quitApp());
         setTitle();
 
         createAskPassword();
@@ -122,15 +133,15 @@ public class Main extends Application {
         // to refresh passwordContentPane when selected passw has changed
         // --------------------------------------------------------------
 
-        passwordTree = new PasswordTree(currentStage,newPasswd-> {
+        passwordTree = new PasswordTree(currentStage, newPasswd -> {
             passwordContentPane.getChildren().clear();
             if (newPasswd != null) {
                 newPasswd.accept(new PasswordDisplayer(passwordContentPane));
             }
-        },passwordContentPane);
+        }, passwordContentPane);
         passwordTree.getStyleClass().add(Styles.PASSWD_TREE);
 
-        filter.setOnKeyReleased((evt)->{
+        filter.setOnKeyReleased((evt) -> {
             final String text = filter.getText();
             passwordTree.updateFilter(text);
         });
@@ -158,9 +169,9 @@ public class Main extends Application {
         // to refresh passwordContentPane when selected passw has changed
         // --------------------------------------------------------------
 
-        passwordList = new PasswordList(this.currentStage,newPasswd->{
+        passwordList = new PasswordList(this.currentStage, newPasswd -> {
             passwordContentPane.getChildren().clear();
-            if (newPasswd!=null) {
+            if (newPasswd != null) {
                 newPasswd.accept(new PasswordDisplayer(passwordContentPane));
             }
         });
@@ -168,7 +179,7 @@ public class Main extends Application {
         passwordList.setPrefWidth(currentStage.getWidth() * 0.33);
 
 
-        filter.setOnKeyReleased((evt)->{
+        filter.setOnKeyReleased((evt) -> {
             final String text = filter.getText();
             passwordList.updateFilter(text);
         });
@@ -202,6 +213,7 @@ public class Main extends Application {
         BorderPane.setAlignment(state, Pos.BOTTOM_LEFT);
 
     }
+
     private void addMenuBar(BorderPane pane) {
         final MenuBar menuBar = new MenuBar();
         menuBar.prefWidthProperty().bind(currentStage.widthProperty());
@@ -224,7 +236,7 @@ public class Main extends Application {
             MenuItem newNote = new MenuItem("Add Note");
             newNote.setOnAction(t -> new CreateOrModifyNote(currentStage).show());
 
-            mainMenu.getItems().addAll( newWebSite, newNote,exit);
+            mainMenu.getItems().addAll(newWebSite, newNote, exit);
         }
 
         // Tools Menu
@@ -247,11 +259,11 @@ public class Main extends Application {
                 Controller.rebuildIndexes();
             });
 
-            CheckMenuItem enableSyncToGoogleDrive = new GDriveSyncCheckMenu(currentStage,"Enable Sync to Google Drive");
+            CheckMenuItem enableSyncToGoogleDrive = new GDriveSyncCheckMenu(currentStage, "Enable Sync to Google Drive");
             enableSyncToGoogleDrive.setSelected(false);
 
 
-            tools.getItems().addAll(generatePassword,changeMainPassword,enableSyncToGoogleDrive,reIndexeLucene);
+            tools.getItems().addAll(generatePassword, changeMainPassword, enableSyncToGoogleDrive, reIndexeLucene);
         }
 
 
@@ -265,6 +277,7 @@ public class Main extends Application {
         System.out.println("exit with button");
         quitApplication();
     }
+
     private void quitAppFromMenu() {
         System.out.println("exit with menu");
         quitApplication();
