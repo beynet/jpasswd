@@ -12,9 +12,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.beynet.model.Config;
 import org.beynet.model.MainPasswordError;
-import org.beynet.model.password.DeletedPassword;
-import org.beynet.model.password.GoogleDrive;
-import org.beynet.model.password.Password;
+import org.beynet.model.password.*;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -34,11 +32,6 @@ public class PasswordStore extends Observable implements Serializable {
 
 
     private static final long serialVersionUID = 774794719034730233L;
-
-    @Override
-    public void notifyObservers(Object arg) {
-        super.notifyObservers(arg);
-    }
 
     /**
      * remove password by id
@@ -115,6 +108,51 @@ public class PasswordStore extends Observable implements Serializable {
                 }
             }
         }
+    }
+
+    public int removeDeletedPasswords() {
+
+        final List<Password> toBeRemoved = new ArrayList<>();
+
+        PasswordVisitor collectToBeRemoved = new PasswordVisitor() {
+            @Override
+            public void visit(WebLoginAndPassword t) {
+
+            }
+
+            @Override
+            public void visit(GoogleDrive t) {
+
+            }
+
+            @Override
+            public void visit(PasswordString s) {
+
+            }
+
+            @Override
+            public void visit(DeletedPassword s) {
+                toBeRemoved.add(s);
+            }
+
+            @Override
+            public void visit(Note note) {
+
+            }
+        };
+        int total = 0;
+        synchronized (passwords) {
+            for (Map.Entry<String,Password> entry:passwords.entrySet()) {
+                entry.getValue().accept(collectToBeRemoved);
+            }
+            for (Password removed : toBeRemoved) {
+                passwords.remove(removed.getId());
+                total++;
+                setChanged();
+                notifyObservers(new PasswordDefinitivelyRemoved(removed));
+            }
+        }
+        return total;
     }
 
     /**

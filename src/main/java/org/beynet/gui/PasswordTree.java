@@ -12,10 +12,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
 import org.beynet.model.password.*;
-import org.beynet.model.store.PasswordModifiedOrCreated;
-import org.beynet.model.store.PasswordRemoved;
-import org.beynet.model.store.PasswordStoreEvent;
-import org.beynet.model.store.PasswordStoreEventVisitor;
+import org.beynet.model.store.*;
 
 import java.util.Map;
 import java.util.Observable;
@@ -145,6 +142,11 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
     @Override
     public void update(Observable o, Object arg) {
         ((PasswordStoreEvent)arg).accept(this);
+    }
+
+    @Override
+    public void visit(PasswordDefinitivelyRemoved r) {
+
     }
 
     @Override

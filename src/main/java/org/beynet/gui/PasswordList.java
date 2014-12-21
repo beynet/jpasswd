@@ -8,10 +8,7 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
 import org.beynet.model.password.*;
-import org.beynet.model.store.PasswordModifiedOrCreated;
-import org.beynet.model.store.PasswordRemoved;
-import org.beynet.model.store.PasswordStoreEvent;
-import org.beynet.model.store.PasswordStoreEventVisitor;
+import org.beynet.model.store.*;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -75,6 +72,11 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
                 }
             }
         );
+    }
+
+    @Override
+    public void visit(PasswordDefinitivelyRemoved r) {
+
     }
 
     @Override
