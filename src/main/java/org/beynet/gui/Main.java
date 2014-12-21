@@ -91,8 +91,8 @@ public class Main extends Application {
         addMenuBar(pane);
 //        addPasswordList(pane);
         addPasswordContent(pane);
-        addPasswordTree(pane);
         addSyncStatus(pane);
+        addPasswordTree(pane);
 
 
         currentScene = new Scene(group, 640, 480);
@@ -141,7 +141,8 @@ public class Main extends Application {
             passwordTree.setPrefWidth(newValue.doubleValue() * 0.33);
         });
         currentStage.heightProperty().addListener((observable, oldValue, newValue) -> {
-            passwordTree.setPrefHeight(newValue.doubleValue() - 90);
+            double size = ((MenuBar) pane.getTop()).getHeight();
+            passwordTree.setPrefHeight(newValue.doubleValue() - 90-size);
         });
 
         box.getChildren().addAll(filter, passwordTree);
