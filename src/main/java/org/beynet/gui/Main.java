@@ -105,17 +105,16 @@ public class Main extends Application {
 
         group.getChildren().add(pane);
 
+        currentScene = new Scene(group, 640, 480);
+        currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
+
         addMenuBar(pane);
 //        addPasswordList(pane);
         addPasswordContent(pane);
         addSyncStatus(pane);
         addPasswordTree(pane);
 
-
-        currentScene = new Scene(group, 640, 480);
-        currentScene.getStylesheets().add(getClass().getResource("/default.css").toExternalForm());
         currentStage.setScene(currentScene);
-
     }
 
     @Override
@@ -153,14 +152,18 @@ public class Main extends Application {
         });
 
 
-        passwordTree.setPrefWidth(currentStage.getWidth() * 0.33);
+        passwordTree.setPrefWidth(currentScene.getWidth() * 0.33);
         currentStage.widthProperty().addListener((observable, oldValue, newValue) -> {
             passwordTree.setPrefWidth(newValue.doubleValue() * 0.33);
         });
-        currentStage.heightProperty().addListener((observable, oldValue, newValue) -> {
+
+
+        passwordTree.setPrefHeight(currentScene.getHeight() - ((MenuBar) pane.getTop()).getHeight() - state.getHeight() - filter.getHeight());
+        currentScene.heightProperty().addListener((observable, oldValue, newValue) -> {
             double size = ((MenuBar) pane.getTop()).getHeight();
-            passwordTree.setPrefHeight(newValue.doubleValue() - 90-size);
+            passwordTree.setPrefHeight(newValue.doubleValue() -size-state.getPrefHeight()-filter.getHeight());
         });
+
 
         box.getChildren().addAll(filter, passwordTree);
         pane.setLeft(box);
@@ -213,7 +216,7 @@ public class Main extends Application {
 
 
     private void addSyncStatus(BorderPane pane) {
-        GoogleDriveVisualState state = new GoogleDriveVisualState();
+        state = new GoogleDriveVisualState();
         pane.setBottom(state);
         state.setMaxHeight(40);
         state.setPrefHeight(40);
@@ -362,5 +365,6 @@ public class Main extends Application {
     private PasswordList passwordList;
     private PasswordTree passwordTree;
     private GridPane passwordContentPane;
+    private GoogleDriveVisualState state;
 
 }
