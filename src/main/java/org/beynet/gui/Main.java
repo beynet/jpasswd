@@ -21,12 +21,14 @@ import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.*;
 import org.beynet.model.store.*;
 import org.beynet.sync.googledrive.GoogleDriveSync;
+import org.beynet.utils.I18NHelper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
 public class Main extends Application {
@@ -56,14 +58,15 @@ public class Main extends Application {
 
 
     private void createAskPassword(String... args) {
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
         Group group = new Group();
 
         HBox pane = new HBox();
         group.getChildren().add(pane);
 
         final PasswordField password = new PasswordField();
-        final Label passwordLabel = new Label("password :");
-        final Button ok = new Button("ok");
+        final Label passwordLabel = new Label(labelResourceBundle.getString("password"));
+        final Button ok = new Button(labelResourceBundle.getString("ok"));
 
 
         // if password is OK print main scene
@@ -74,7 +77,7 @@ public class Main extends Application {
                 Controller.initConfig(password.getText(), savePath, fileName);
                 createMainScene();
             } catch (MainPasswordError mainPasswordError) {
-                new Alert(currentStage, "password error").show();
+                new Alert(currentStage, labelResourceBundle.getString("perror")).show();
             }
         };
 
@@ -225,6 +228,7 @@ public class Main extends Application {
     }
 
     private void addMenuBar(BorderPane pane) {
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
         final MenuBar menuBar = new MenuBar();
         menuBar.prefWidthProperty().bind(currentStage.widthProperty());
         menuBar.setUseSystemMenuBar(true);
@@ -237,13 +241,13 @@ public class Main extends Application {
             menuBar.getMenus().add(mainMenu);
 
             // files menu
-            MenuItem exit = new MenuItem("Exit");
+            MenuItem exit = new MenuItem(labelResourceBundle.getString("exit"));
             exit.setOnAction(t -> quitAppFromMenu());
 
-            MenuItem newWebSite = new MenuItem("Add Web Site");
+            MenuItem newWebSite = new MenuItem(labelResourceBundle.getString("addwebsite"));
             newWebSite.setOnAction(t -> new CreateOrModifyWebSitePassword(currentStage).show());
 
-            MenuItem newNote = new MenuItem("Add Note");
+            MenuItem newNote = new MenuItem(labelResourceBundle.getString("addnote"));
             newNote.setOnAction(t -> new CreateOrModifyNote(currentStage).show());
 
             mainMenu.getItems().addAll(newWebSite, newNote, exit);
@@ -252,20 +256,20 @@ public class Main extends Application {
         // Tools Menu
         // **************
         {
-            Menu tools = new Menu("Tools");
+            Menu tools = new Menu(labelResourceBundle.getString("tools"));
             menuBar.getMenus().add(tools);
-            MenuItem generatePassword = new MenuItem("Generate Password");
+            MenuItem generatePassword = new MenuItem(labelResourceBundle.getString("generatepassword"));
             generatePassword.setOnAction(t -> {
                 new GeneratePassword(currentStage).show();
             });
 
-            MenuItem changeMainPassword = new MenuItem("Change application password");
+            MenuItem changeMainPassword = new MenuItem(labelResourceBundle.getString("changeapppassword"));
             changeMainPassword.setOnAction(t -> {
                 new ChangeMainPassword(currentStage).show();
             });
 
             // add menu to clear deleted passwords
-            final String label = "Compress DataBase (VAL)";
+            final String label = labelResourceBundle.getString("compdatabase");
             MenuItem compress = new MenuItem(label.replaceFirst("VAL","0"));
             compress.setOnAction(t->{
                 Controller.compressDatabase(currentStage);
@@ -327,12 +331,12 @@ public class Main extends Application {
             Controller.suscribeToPassword(countDeletedPasswords);
 
 
-            MenuItem reIndexeLucene = new MenuItem("Rebuild indexes");
+            MenuItem reIndexeLucene = new MenuItem(labelResourceBundle.getString("rebuildindexes"));
             reIndexeLucene.setOnAction(t -> {
                 Controller.rebuildIndexes();
             });
 
-            CheckMenuItem enableSyncToGoogleDrive = new GDriveSyncCheckMenu(currentStage, "Enable Sync to Google Drive");
+            CheckMenuItem enableSyncToGoogleDrive = new GDriveSyncCheckMenu(currentStage, labelResourceBundle.getString("enablesynctogdrive"));
             enableSyncToGoogleDrive.setSelected(false);
 
 

@@ -7,9 +7,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import org.beynet.controller.Controller;
 import org.beynet.sync.googledrive.GoogleDriveSyncState;
+import org.beynet.utils.I18NHelper;
 
 import java.util.Observable;
 import java.util.Observer;
+import java.util.ResourceBundle;
 
 
 /**
@@ -18,7 +20,8 @@ import java.util.Observer;
 public class GoogleDriveVisualState extends HBox implements Observer{
     public GoogleDriveVisualState() {
         super(8);
-        Label gdrive = new Label("Google drive sync status");
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
+        Label gdrive = new Label(labelResourceBundle.getString("gdrivesyncstatus"));
         visualState= new ImageView(OFF);
         visualState.setFitWidth(24);
         visualState.setFitHeight(24);

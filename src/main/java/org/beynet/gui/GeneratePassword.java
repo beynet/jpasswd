@@ -8,6 +8,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.beynet.controller.PasswordGenerator;
+import org.beynet.utils.I18NHelper;
+
+import java.util.ResourceBundle;
 
 
 /**
@@ -16,17 +19,17 @@ import org.beynet.controller.PasswordGenerator;
 public class GeneratePassword extends DialogNotModal {
     public GeneratePassword(Stage parent) {
         super(parent,null,null);
-
-        Label sizeLabel = new Label("Password Length");
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
+        Label sizeLabel = new Label(labelResourceBundle.getString("passwordlength"));
         TextField size = new TextField("10");
 
-        Label digitsLabel = new Label("Total digits");
+        Label digitsLabel = new Label(labelResourceBundle.getString("totaldigits"));
         TextField digits = new TextField("0");
 
-        Label symbolsLabel = new Label("Total symbols");
+        Label symbolsLabel = new Label(labelResourceBundle.getString("totalsymbols"));
         TextField symbols = new TextField("0");
 
-        Label passwordLabel = new Label("Password :");
+        Label passwordLabel = new Label(labelResourceBundle.getString("password"));
         TextField password = new TextField(PasswordGenerator.generateNewPassword(10,0,0));
         password.setMinWidth(new Text(password.getText()).getLayoutBounds().getWidth()+20);
 
@@ -35,7 +38,7 @@ public class GeneratePassword extends DialogNotModal {
         grid.setVgap(5);
         getRootGroup().getChildren().add(grid);
 
-        Button generate = new Button("generate");
+        Button generate = new Button(labelResourceBundle.getString("generate"));
         generate.setOnAction(evt->{
                     Integer val;
                     Integer totaldigits;
@@ -43,19 +46,19 @@ public class GeneratePassword extends DialogNotModal {
                     try {
                         val = Integer.valueOf(size.getText());
                     }catch(NumberFormatException e) {
-                        new Alert(this,"Size must be an integer");
+                        new Alert(this,labelResourceBundle.getString("invalidsize")).show();
                         return;
                     }
                     try {
                         totaldigits = Integer.valueOf(digits.getText());
                     }catch(NumberFormatException e) {
-                        new Alert(this,"numbers digits must be an integer");
+                        new Alert(this,labelResourceBundle.getString("invaliddigitsnumber")).show();
                         return;
                     }
                     try {
                         totalsymbols = Integer.valueOf(symbols.getText());
                     }catch(NumberFormatException e) {
-                        new Alert(this,"numbers symbols must be an integer");
+                        new Alert(this,labelResourceBundle.getString("invalidsymbolsnumber")).show();
                         return;
                     }
                     double prevMinWidth = password.getMinWidth();

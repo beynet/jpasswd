@@ -9,8 +9,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
 import org.beynet.model.password.WebLoginAndPassword;
+import org.beynet.utils.I18NHelper;
 
 import java.net.URI;
+import java.util.ResourceBundle;
 
 /**
  * Created by beynet on 16/10/2014.
@@ -21,16 +23,19 @@ public class CreateOrModifyWebSitePassword extends Dialog {
     }
     public CreateOrModifyWebSitePassword(Stage parent,WebLoginAndPassword password) {
         super(parent, null, null);
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
+
         this.password = password;
 
-        Text loginL    = new Text("login");
-        Text passwordL = new Text("password");
-        Text uriL      = new Text("uri");
+        Text loginL    = new Text(labelResourceBundle.getString("login"));
+        Text passwordL = new Text(labelResourceBundle.getString("password"));
+        Text uriL      = new Text(labelResourceBundle.getString("uri"));
+        Text confirmL   = new Text(labelResourceBundle.getString("save"));
 
 
-        final String loginMessage ="web site login";
-        final String passwordMessage ="web site password";
-        final String uriMessage="web site URI";
+        final String loginMessage =labelResourceBundle.getString("login");
+        final String passwordMessage =labelResourceBundle.getString("password");
+        final String uriMessage=labelResourceBundle.getString("uri");
         TextField login=new TextField();
 
         login.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
@@ -51,22 +56,24 @@ public class CreateOrModifyWebSitePassword extends Dialog {
             login.setText(this.password.getLogin());
         }
 
-        Button confirm = new Button("save");
+        Button confirm = new Button(labelResourceBundle.getString("save"));
+        confirm.setMinWidth(confirmL.getLayoutBounds().getWidth()+20);
         confirm.setOnAction(p->{
             URI uriCreated ;
             try {
                 uriCreated = new URI(uri.getText());
             }catch(Exception e) {
-                new Alert(this,"uri <"+(uri.getText()!=null?uri.getText():"")+"> invalid").show();
+                String message = labelResourceBundle.getString("invaliduri");
+                new Alert(this,message.replaceAll("VAL",(uri.getText()!=null?uri.getText():""))).show();
                 return;
             }
 
             if (passwordT.getText()==null||passwordT.getText().isEmpty()) {
-                new Alert(this,"passsword MUST not be empty").show();
+                new Alert(this,labelResourceBundle.getString("emptypassword")).show();
                 return;
             }
             if (login.getText()==null||login.getText().isEmpty()) {
-                new Alert(this,"login MUST not be empty").show();
+                new Alert(this,labelResourceBundle.getString("emptyuri")).show();
                 return;
             }
 

@@ -9,6 +9,7 @@ import org.beynet.model.Config;
 import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.Password;
 import org.beynet.sync.googledrive.GoogleDriveSync;
+import org.beynet.utils.I18NHelper;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -53,9 +54,11 @@ public class Controller {
      * remove all deleted passwords from database
      */
     public static void compressDatabase(Stage mainStage) {
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
         Platform.runLater(()->{
             int total = Config.getInstance().getPasswordStore().removeDeletedPasswords();
-            new Alert(mainStage,total+" password has been removed").show();
+            String message = labelResourceBundle.getString("deletedpasswordremoved");
+            new Alert(mainStage,message.replaceAll("VAL",""+total)).show();
         });
     }
 

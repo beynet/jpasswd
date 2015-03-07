@@ -8,6 +8,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import org.beynet.model.password.*;
+import org.beynet.utils.I18NHelper;
+
+import java.util.ResourceBundle;
 
 /**
  * Created by beynet on 13/10/2014.
@@ -49,17 +52,18 @@ public class PasswordDisplayer implements PasswordVisitor {
 
     @Override
     public void visit(WebLoginAndPassword t) {
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
         if (pane.getChildren()!=null) pane.getChildren().clear();
-        Label label = new Label("Web site="+t.getUri().getHost()!=null?t.getUri().getHost():t.getUri().toString());
-        pane.add(label,0,0);
+        Label label = new Label(labelResourceBundle.getString("uri")+" = "+(t.getUri()!=null?t.getUri().toString():" "));
+        pane.add(label,0,0,2,1);
 
-        Label loginLabel = new Label("Login");
+        Label loginLabel = new Label(labelResourceBundle.getString("login"));
         TextField login = new TextField(t.getLogin());
         login.setEditable(false);
         pane.add(loginLabel,0,1);
         pane.add(login,1,1);
 
-        Label passwordLabel = new Label("Password");
+        Label passwordLabel = new Label(labelResourceBundle.getString("password"));
         TextField password = new TextField(t.getPassword().getHiddenPassword());
         ImageView imageView = new ImageView(eye);
         imageView.setFitWidth(23);

@@ -13,10 +13,12 @@ import javafx.stage.Stage;
 import org.beynet.controller.Controller;
 import org.beynet.model.password.*;
 import org.beynet.model.store.*;
+import org.beynet.utils.I18NHelper;
 
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
 /**
@@ -26,6 +28,7 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
     private final Consumer<Password> selectedPasswordChange;
 
     public PasswordTree(Stage parent,Consumer<Password> selectedPasswordChange,Pane passwordContentPane) {
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
         this.selectedPasswordChange = selectedPasswordChange;
         setCellFactory(fileCopiedTreeView -> new PasswordTreeCell());
 
@@ -35,14 +38,14 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
             rootTreeItem.getValue().setExpanded(newValue);
         });
 
-        webPasswords=new TreeItem<>(new FolderTreeNode("Web passwords"));
+        webPasswords=new TreeItem<>(new FolderTreeNode(labelResourceBundle.getString("website")));
         webPasswords.setExpanded(true);
         webPasswords.expandedProperty().addListener((observable, oldValue, newValue) -> {
             webPasswords.getValue().setExpanded(newValue);
         });
 
 
-        notes=new TreeItem<>(new FolderTreeNode("notes"));
+        notes=new TreeItem<>(new FolderTreeNode(labelResourceBundle.getString("securenotes")));
         notes.setExpanded(true);
         notes.expandedProperty().addListener((observable, oldValue, newValue) -> {
             notes.getValue().setExpanded(newValue);

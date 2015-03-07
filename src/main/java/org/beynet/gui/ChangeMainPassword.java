@@ -11,6 +11,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
+import org.beynet.utils.I18NHelper;
+
+import java.util.ResourceBundle;
 
 /**
  * Created by beynet on 19/10/2014.
@@ -19,13 +22,15 @@ public class ChangeMainPassword extends DialogModal {
     public ChangeMainPassword(Stage parent) {
         super(parent,null,null);
 
+        final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
+
         GridPane pane = new GridPane();
 
         final PasswordField password = new PasswordField();
-        password.setPromptText("fill with new password");
+        password.setPromptText(labelResourceBundle.getString("fillnewpassword"));
         final PasswordField passwordConfirm = new PasswordField();
-        passwordConfirm.setPromptText("confirm the new password");
-        final Button ok = new Button("change password");
+        passwordConfirm.setPromptText(labelResourceBundle.getString("confirmnewpassword"));
+        final Button ok = new Button(labelResourceBundle.getString("changepassword"));
 
         ok.setOnAction(event -> {
             if (password.getText()!=null && !password.getText().isEmpty()) {
@@ -34,7 +39,7 @@ public class ChangeMainPassword extends DialogModal {
                     close();
                 }
                 else {
-                    new Alert(this,"password mismatch").show();
+                    new Alert(this,labelResourceBundle.getString("passwordmismatch")).show();
                 }
             }
         });
