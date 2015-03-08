@@ -1,5 +1,7 @@
 package org.beynet.gui;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
@@ -41,9 +43,11 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         login.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         login.setPromptText(loginMessage);
 
-        PasswordField passwordT = new PasswordField();
+
+        TextField passwordT = new TextField(hiddenPassword);
         passwordT.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         passwordT.setPromptText(passwordMessage);
+
 
 
         TextField uri = new TextField();
@@ -52,9 +56,21 @@ public class CreateOrModifyWebSitePassword extends Dialog {
 
         if (this.password!=null) {
             uri.setText(this.password.getUri().toString());
-            passwordT.setText(this.password.getPassword().getPassword());
+            currentPasswordValue=this.password.getPassword().getPassword();
             login.setText(this.password.getLogin());
         }
+
+        passwordT.focusedProperty().addListener((obs,prev,curr)->{
+            if (Boolean.TRUE.equals(prev)) {
+                currentPasswordValue=passwordT.getText();
+            }
+            if (Boolean.TRUE.equals(curr)) {
+                passwordT.setText(currentPasswordValue);
+            }
+            else {
+                passwordT.setText(hiddenPassword);
+            }
+        });
 
         Button confirm = new Button(labelResourceBundle.getString("save"));
         confirm.setMinWidth(confirmL.getLayoutBounds().getWidth()+20);
@@ -68,7 +84,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
                 return;
             }
 
-            if (passwordT.getText()==null||passwordT.getText().isEmpty()) {
+            if (currentPasswordValue==null||currentPasswordValue.isEmpty()) {
                 new Alert(this,labelResourceBundle.getString("emptypassword")).show();
                 return;
             }
@@ -77,7 +93,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
                 return;
             }
 
-            WebLoginAndPassword newP = new WebLoginAndPassword(uriCreated,login.getText(),passwordT.getText());
+            WebLoginAndPassword newP = new WebLoginAndPassword(uriCreated,login.getText(),currentPasswordValue);
             Controller.notifyPasswordModified(this.password,newP);
             close();
         });
@@ -103,5 +119,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
 
 
 
-    WebLoginAndPassword password;
+    private WebLoginAndPassword password;
+    private String hiddenPassword = "***";
+    private String currentPasswordValue = null;
 }
