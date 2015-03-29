@@ -16,9 +16,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.*;
 
 /**
@@ -185,14 +185,23 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
-    Path getExpectedBackupPath() {
-        Calendar cal = Calendar.getInstance();
-        int day = cal.get(Calendar.DAY_OF_MONTH);
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH);
-        String extension = String.format(".%d%02d%02d", year, day, month);
+    private void moveOldBackups() throws IOException {
+        for (int i=MAX_BACKUPS-1;i>=1;i--) {
+            Path current = getExpectedBackupPath(i);
+            Path target = getExpectedBackupPath(i+1);
+            if (Files.exists(current)) {
+                Files.move(current, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+    }
 
-        return storePath.getParent().resolve(storePath.getFileName() + extension);
+    Path getExpectedBackupPath(int offset) {
+        return storePath.getParent().resolve(storePath.getFileName() + String.format(".%d",offset));
+    }
+
+    Path getExpectedBackupPath() {
+        return getExpectedBackupPath(1);
+
     }
 
     /**
@@ -253,6 +262,11 @@ public class PasswordStore extends Observable implements Serializable {
      */
     public PasswordStore(Path fromFile,Config config) throws IOException,MainPasswordError {
         init(fromFile, null, config);
+        try {
+            moveOldBackups();
+        }catch(IOException e) {
+            logger.error("error removing old backup files",e);
+        }
     }
 
     public PasswordStore(Path fromFile,byte[] fromMemory,Config config) throws IOException,MainPasswordError {
@@ -354,5 +368,6 @@ public class PasswordStore extends Observable implements Serializable {
 
 
     private final static Logger logger = Logger.getLogger(PasswordStore.class);
+    private final static int MAX_BACKUPS = 7 ;
 
 }
