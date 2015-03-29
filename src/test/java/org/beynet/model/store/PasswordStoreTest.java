@@ -3,22 +3,15 @@ package org.beynet.model.store;
 import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.Password;
 import org.beynet.model.password.WebLoginAndPassword;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -95,7 +88,7 @@ public class PasswordStoreTest extends RootTest {
         s1.merge(writeAndReload(s2));
 
         final Password actual = s1.passwords.get(p2.getId());
-        assertThat(actual,notNullValue());
+        assertThat(actual, notNullValue());
         assertThat(actual,is(p2));
     }
 
@@ -141,19 +134,40 @@ public class PasswordStoreTest extends RootTest {
         s1.savePassword(p2);
 
         Map<String,Password> results = s1.search("google");
-        assertThat(new Integer(results.size()),is(Integer.valueOf(1)));
-        assertThat(results.get(p1.getId()),is(p1));
+        assertThat(new Integer(results.size()), is(Integer.valueOf(1)));
+        assertThat(results.get(p1.getId()), is(p1));
 
         results = s1.search("fresnes");
-        assertThat(new Integer(results.size()),is(Integer.valueOf(1)));
+        assertThat(new Integer(results.size()), is(Integer.valueOf(1)));
         assertThat(results.get(p2.getId()),is(p2));
 
 
         results = s1.search("testeur");
-        assertThat(new Integer(results.size()),is(Integer.valueOf(2)));
+        assertThat(new Integer(results.size()), is(Integer.valueOf(2)));
         assertThat(results.containsKey(p1.getId()),is(Boolean.TRUE));
         assertThat(results.containsKey(p2.getId()),is(Boolean.TRUE));
 
     }
+
+    @Test
+    public void backupfile() throws IOException, ClassNotFoundException, MainPasswordError {
+
+        Path storePath = Files.createTempFile("tmp", ".dat");
+        PasswordStore s1 = new PasswordStore(storePath);
+        Path expectedBackupFile = s1.getExpectedBackupPath();
+        assertThat(expectedBackupFile,not(equalTo(s1.storePath)));
+
+        WebLoginAndPassword p1 = new WebLoginAndPassword(URI.create("http://www.google.fr"),"testeur","password");
+        WebLoginAndPassword p2 = new WebLoginAndPassword(URI.create("http://www.fresnes.info"),"testeur","password2");
+
+        s1.savePassword(p1);
+        s1.save();
+        s1.savePassword(p2);
+        s1.save();
+
+        assertThat(Files.exists(expectedBackupFile), is(Boolean.TRUE));
+
+    }
+
 
 }

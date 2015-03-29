@@ -5,7 +5,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -76,7 +75,7 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
     /**
-     * save an new password in the database
+     * save a new password in the database
      * @param p
      */
     public void savePassword(Password p) {
@@ -186,9 +185,34 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
+    Path getExpectedBackupPath() {
+        Calendar cal = Calendar.getInstance();
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);
+        String extension = String.format(".%d%02d%02d", year, day, month);
+
+        return storePath.getParent().resolve(storePath.getFileName() + extension);
+    }
+
+    /**
+     * backup previous store file if no such backup exists today
+     */
+    private void backupPrevious() {
+        Path backupPath = getExpectedBackupPath();
+        try {
+            if (Files.exists(storePath) && Files.size(storePath)>0 && !Files.exists(backupPath)) {
+                Files.copy(storePath, backupPath);
+            }
+        } catch (IOException e) {
+            logger.error("unable to backup store file",e);
+        }
+    }
+
 
     public void save() throws IOException {
         synchronized (passwords) {
+            backupPrevious();
             try (OutputStream os = Files.newOutputStream(storePath, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)) {
                 save(os);
             }
@@ -207,7 +231,7 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
     /**
-     * construct a password store from byte array
+     * construct a password store from a byte array (already decrypted)
      * @param fromMemory : decrypted password store content
      * @param config
      * @throws IOException
@@ -220,6 +244,13 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
+    /**
+     * construct password store from a file stored (crypted) on disk
+     * @param fromFile
+     * @param config
+     * @throws IOException
+     * @throws MainPasswordError
+     */
     public PasswordStore(Path fromFile,Config config) throws IOException,MainPasswordError {
         init(fromFile, null, config);
     }
