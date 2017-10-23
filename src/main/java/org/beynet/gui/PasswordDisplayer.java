@@ -54,8 +54,13 @@ public class PasswordDisplayer implements PasswordVisitor {
     public void visit(WebLoginAndPassword t) {
         final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
         if (pane.getChildren()!=null) pane.getChildren().clear();
-        Label label = new Label(labelResourceBundle.getString("uri")+" = "+(t.getUri()!=null?t.getUri().toString():" "));
-        pane.add(label,0,0,2,1);
+        Label label = new Label(labelResourceBundle.getString("uri")+" = ");
+        TextField uri = new TextField();
+        uri.setText(t.getUri()!=null?t.getUri().toString():" ");
+        uri.setEditable(false);
+        
+        pane.add(label,0,0,1,1);
+        pane.add(uri,1,0,1,1);
 
         Label loginLabel = new Label(labelResourceBundle.getString("login"));
         TextField login = new TextField(t.getLogin());
