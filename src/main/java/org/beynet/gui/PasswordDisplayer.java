@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 import org.beynet.model.password.*;
 import org.beynet.utils.I18NHelper;
 
@@ -16,7 +17,8 @@ import java.util.ResourceBundle;
  * Created by beynet on 13/10/2014.
  */
 public class PasswordDisplayer implements PasswordVisitor {
-    PasswordDisplayer(GridPane p) {
+    PasswordDisplayer(Stage stage,GridPane p) {
+        this.stage = stage;
         pane = p;
     }
 
@@ -55,21 +57,21 @@ public class PasswordDisplayer implements PasswordVisitor {
         final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
         if (pane.getChildren()!=null) pane.getChildren().clear();
         Label label = new Label(labelResourceBundle.getString("uri")+" = ");
-        TextField uri = new TextField();
+        TextFieldWithShortcuts uri = new TextFieldWithShortcuts();
         uri.setText(t.getUri()!=null?t.getUri().toString():" ");
         uri.setEditable(false);
-        
+
         pane.add(label,0,0,1,1);
         pane.add(uri,1,0,1,1);
 
         Label loginLabel = new Label(labelResourceBundle.getString("login"));
-        TextField login = new TextField(t.getLogin());
+        TextFieldWithShortcuts login = new TextFieldWithShortcuts(t.getLogin());
         login.setEditable(false);
         pane.add(loginLabel,0,1);
         pane.add(login,1,1);
 
         Label passwordLabel = new Label(labelResourceBundle.getString("password"));
-        TextField password = new TextField(t.getPassword().getHiddenPassword());
+        TextFieldWithShortcuts password = new TextFieldWithShortcuts(t.getPassword().getHiddenPassword());
         ImageView imageView = new ImageView(eye);
         imageView.setFitWidth(23);
         imageView.setFitHeight(23);
@@ -100,6 +102,7 @@ public class PasswordDisplayer implements PasswordVisitor {
     }
 
     GridPane pane;
+    Stage stage;
 
     private static final Image eye = new Image(PasswordDisplayer.class.getResourceAsStream("/eye.png"));
     private static final Image eyeHidden = new Image(PasswordDisplayer.class.getResourceAsStream("/eye-hidden.png"));

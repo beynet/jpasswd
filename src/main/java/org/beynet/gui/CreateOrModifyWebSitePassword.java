@@ -38,19 +38,19 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         final String loginMessage =labelResourceBundle.getString("login");
         final String passwordMessage =labelResourceBundle.getString("password");
         final String uriMessage=labelResourceBundle.getString("uri");
-        TextField login=new TextField();
+        TextField login=new TextFieldWithShortcuts();
 
         login.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         login.setPromptText(loginMessage);
 
 
-        TextField passwordT = new TextField(hiddenPassword);
+        TextField passwordT = new TextFieldWithShortcuts(hiddenPassword);
         passwordT.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         passwordT.setPromptText(passwordMessage);
 
 
 
-        TextField uri = new TextField();
+        TextField uri = new TextFieldWithShortcuts();
         uri.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         uri.setPromptText(uriMessage);
 

@@ -144,7 +144,7 @@ public class Main extends Application {
         passwordTree = new PasswordTree(currentStage, newPasswd -> {
             passwordContentPane.getChildren().clear();
             if (newPasswd != null) {
-                newPasswd.accept(new PasswordDisplayer(passwordContentPane));
+                newPasswd.accept(new PasswordDisplayer(currentStage,passwordContentPane));
             }
         }, passwordContentPane);
         passwordTree.getStyleClass().add(Styles.PASSWD_TREE);
@@ -185,7 +185,7 @@ public class Main extends Application {
         passwordList = new PasswordList(this.currentStage, newPasswd -> {
             passwordContentPane.getChildren().clear();
             if (newPasswd != null) {
-                newPasswd.accept(new PasswordDisplayer(passwordContentPane));
+                newPasswd.accept(new PasswordDisplayer(currentStage,passwordContentPane));
             }
         });
         passwordList.getStyleClass().add(Styles.PASSWD_LIST);
