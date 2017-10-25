@@ -286,9 +286,9 @@ public class PasswordStore extends Observable implements Serializable {
             }
 
             //create lucene index
-            Directory dir = FSDirectory.open(this.idxPath.toFile());
+            Directory dir = FSDirectory.open(this.idxPath);
             Analyzer analyzer = new StandardAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_1, analyzer);
+            IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
             this.writer = new IndexWriter(dir, iwc);
@@ -301,7 +301,7 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
     private IndexReader createReader() throws IOException {
-        return DirectoryReader.open(writer,true);
+        return DirectoryReader.open(writer,true,true);
     }
 
     public Map<String,Password> search(String query) throws IOException {
@@ -317,17 +317,17 @@ public class PasswordStore extends Observable implements Serializable {
             try {
                 IndexSearcher searcher = new IndexSearcher(reader);
 
-                BooleanQuery booleanQuery = new BooleanQuery();
+                BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
 
                 Query patternQuery = new WildcardQuery(new Term(Password.FIELD_TXT, "*" + query + "*"));
-                booleanQuery.add(patternQuery, BooleanClause.Occur.MUST);
+                booleanQueryBuilder.add(patternQuery, BooleanClause.Occur.MUST);
 
                 Map<String, Password> result = new HashMap<>();
                 synchronized (passwords) {
 
-                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000);
 
-                    searcher.search(booleanQuery, collector);
+                    searcher.search(booleanQueryBuilder.build(), collector);
                     ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
                     for (int i = 0; i < hits.length; ++i) {
