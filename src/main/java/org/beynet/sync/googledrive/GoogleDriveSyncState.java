@@ -329,6 +329,7 @@ public enum GoogleDriveSyncState {
                         modifyUploadedFile(credentials, file);
                     }
                 } catch (IOException e) {
+                    logger.error("ioexception ",e);
                     if (credentials.get(ACCESS_TOKEN)!=null) {
                         return RETRY_SEND_FILE;
                     }
