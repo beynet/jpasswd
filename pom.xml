@@ -12,22 +12,16 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>12</java.version>
         <jfx.version>12.0.1</jfx.version>
+        <lucene.version>8.1.1</lucene.version>
 	</properties>
 
 	<build>
 		<plugins>
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.2</version>
-                <configuration>
-                    <mainClass>org.beynet.gui.Main</mainClass>
-                </configuration>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.1</version>
                 <configuration>
                     <release>${java.version}</release>
                 </configuration>
@@ -151,24 +145,24 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>7.1.0</version>
+            <version>${lucene.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
-            <version>7.1.0</version>
+            <version>${lucene.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>7.1.0</version>
+            <version>${lucene.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>7.1.0</version>
+            <version>${lucene.version}</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
