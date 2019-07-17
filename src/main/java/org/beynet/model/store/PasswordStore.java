@@ -325,7 +325,7 @@ public class PasswordStore extends Observable implements Serializable {
                 Map<String, Password> result = new HashMap<>();
                 synchronized (passwords) {
 
-                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000);
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000,1000);
 
                     searcher.search(booleanQueryBuilder.build(), collector);
                     ScoreDoc[] hits = collector.topDocs().scoreDocs;
