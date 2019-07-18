@@ -191,7 +191,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     }
 
     @Override
-    public void update​(Observable o, Object arg) {
+    public void update(Observable o, Object arg) {
         ((PasswordStoreEvent)arg).accept(this);
     }
 
