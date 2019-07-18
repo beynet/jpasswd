@@ -34,7 +34,7 @@ public class GDriveSyncCheckMenu extends CheckMenuItem implements Observer {
     }
 
     @Override
-    public void update(Observable o, Object arg) {
+    public void update​(Observable o, Object arg) {
         if (arg!=null && arg instanceof PasswordModifiedOrCreated) {
             if (((PasswordModifiedOrCreated) arg).getPassword() instanceof GoogleDrive) {
                 if (isSelected() == false) {
