@@ -6,18 +6,18 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import org.beynet.controller.Controller;
+import org.beynet.model.Observable;
+import org.beynet.model.Observer;
 import org.beynet.sync.googledrive.GoogleDriveSyncState;
 import org.beynet.utils.I18NHelper;
 
-import java.util.Observable;
-import java.util.Observer;
 import java.util.ResourceBundle;
 
 
 /**
  * This class will display a visual state of google drive sync status
  */
-public class GoogleDriveVisualState extends HBox implements Observer{
+public class GoogleDriveVisualState extends HBox implements Observer {
     public GoogleDriveVisualState() {
         super(8);
         final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();

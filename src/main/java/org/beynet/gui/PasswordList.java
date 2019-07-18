@@ -7,10 +7,13 @@ import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
+import org.beynet.model.Observable;
+import org.beynet.model.Observer;
 import org.beynet.model.password.*;
 import org.beynet.model.store.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -191,7 +194,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     }
 
     @Override
-    public void update(Observable o, Object arg) {
+    public void update​(Observable o, Object arg) {
         ((PasswordStoreEvent)arg).accept(this);
     }
 
@@ -201,4 +204,5 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
     private String filter;
 
     private final static Logger logger = Logger.getLogger(PasswordList.class);
+
 }

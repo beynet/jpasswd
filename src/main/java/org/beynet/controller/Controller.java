@@ -8,12 +8,16 @@ import org.beynet.gui.GoogleDriveVisualState;
 import org.beynet.model.Config;
 import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.Password;
+import org.beynet.model.Observer;
 import org.beynet.sync.googledrive.GoogleDriveSync;
 import org.beynet.utils.I18NHelper;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 
 /**
  * Created by beynet on 16/10/2014.

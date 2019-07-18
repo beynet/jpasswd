@@ -11,13 +11,13 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
+import org.beynet.model.Observable;
+import org.beynet.model.Observer;
 import org.beynet.model.password.*;
 import org.beynet.model.store.*;
 import org.beynet.utils.I18NHelper;
 
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 

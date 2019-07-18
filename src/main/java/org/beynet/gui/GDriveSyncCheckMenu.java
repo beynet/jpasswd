@@ -4,12 +4,12 @@ import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.stage.Stage;
 import org.beynet.controller.Controller;
+import org.beynet.model.Observable;
+import org.beynet.model.Observer;
 import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.store.PasswordModifiedOrCreated;
 import org.beynet.model.store.PasswordRemoved;
 
-import java.util.Observable;
-import java.util.Observer;
 
 /**
  * Created by beynet on 07/11/14.

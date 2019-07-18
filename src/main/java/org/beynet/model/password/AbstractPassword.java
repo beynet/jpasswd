@@ -23,7 +23,7 @@ public abstract class AbstractPassword implements Password {
     protected AbstractPassword(String id) {
         if (id==null||id.isEmpty()) throw new IllegalArgumentException("id must not be null nor empty");
         this.id=id;
-        modified = new Long(System.currentTimeMillis());
+        modified = Long.valueOf(System.currentTimeMillis());
     }
 
 

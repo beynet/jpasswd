@@ -6,9 +6,7 @@ import org.beynet.exceptions.PasswordMismatchException;
 import org.beynet.model.password.GoogleDrive;
 import org.beynet.model.store.PasswordStore;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
@@ -18,8 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Key;
-import java.util.Observable;
-import java.util.Observer;
 
 /**
  * Created by beynet on 15/10/2014.

@@ -2,10 +2,10 @@ package org.beynet.sync.googledrive;
 
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
+import org.beynet.model.Observable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Observable;
 
 /**
  * Created by beynet on 25/10/14.

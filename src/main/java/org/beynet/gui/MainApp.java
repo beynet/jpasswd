@@ -18,6 +18,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.beynet.controller.Controller;
 import org.beynet.model.MainPasswordError;
+import org.beynet.model.Observer;
 import org.beynet.model.password.*;
 import org.beynet.model.store.*;
 import org.beynet.sync.googledrive.GoogleDriveSync;
@@ -26,7 +27,6 @@ import org.beynet.utils.I18NHelper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Observer;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 

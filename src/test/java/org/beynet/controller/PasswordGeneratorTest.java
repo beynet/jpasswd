@@ -46,8 +46,8 @@ public class PasswordGeneratorTest {
             }
         }
 
-        assertThat(new Integer(n),is(Integer.valueOf(expectedNumber)));
-        assertThat(new Integer(syb),is(Integer.valueOf(expectedSymbols)));
+        assertThat(Integer.valueOf(n),is(Integer.valueOf(expectedNumber)));
+        assertThat(Integer.valueOf(syb),is(Integer.valueOf(expectedSymbols)));
     }
 
     @Test

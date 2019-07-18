@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.beynet.exceptions.PasswordMismatchException;
 import org.beynet.gui.GoogleDriveAuthent;
 import org.beynet.model.Config;
+import org.beynet.model.Observer;
 import org.beynet.sync.AuthenticationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -20,7 +21,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
-import java.util.Observer;
 
 /**
  * Created by beynet on 03/11/14.

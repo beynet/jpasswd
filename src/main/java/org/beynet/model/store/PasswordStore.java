@@ -8,18 +8,21 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.beynet.model.Config;
 import org.beynet.model.MainPasswordError;
+import org.beynet.model.Observable;
+import org.beynet.model.Observer;
 import org.beynet.model.password.*;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
 import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
+
 
 /**
  * Created by beynet on 12/10/2014.
@@ -361,7 +364,7 @@ public class PasswordStore extends Observable implements Serializable {
         }
     }
 
-    protected    Map<String,Password> passwords;
+    protected Map<String,Password> passwords;
     protected    Path                 storePath;
     protected    Path                 idxPath  ;
     protected    IndexWriter          writer   ;
