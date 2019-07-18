@@ -12,8 +12,8 @@ import org.beynet.model.Observer;
 import org.beynet.model.password.*;
 import org.beynet.model.store.*;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -24,7 +24,6 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
 
     public PasswordList(Stage parent,Consumer<Password> selectedPasswordChange) {
         this.selectedPasswordChange = selectedPasswordChange;
-        elements = new HashMap<>();
         setCellFactory(param -> new PasswordCell());
         Controller.suscribeToPassword(this);
         setOnKeyPressed(e->{
@@ -111,24 +110,24 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
             }
 
             private void updateList(boolean thisIsADeletedPassword) {
-                synchronized (elements) {
-                    final Password previousVersion = elements.get(p.getId());
-                    Platform.runLater(() -> {
-                        if (previousVersion !=null) {
-                            elements.remove(previousVersion);
-                            getItems().remove(previousVersion);
-                        }
-                        if (thisIsADeletedPassword) return;
-                        elements.put(p.getId(),p);
-                        if (filter!=null) {
-                            final Map<String,Password> matching = Controller.getMatching(filter);
-                            if (matching.containsKey(p.getId())) getItems().add(p);
-                        }
-                        else {
-                            getItems().add(p);
-                        }
-                    });
-                }
+
+                //final Password previousVersion = elements.get(p.getId());
+                Platform.runLater(() -> {
+
+                    Optional<Password> found = getItems().stream().filter(i -> p.getId().equals(i.getId())).findFirst();
+                    found.ifPresent(previousVersion->getItems().remove(previousVersion));
+
+                    if (thisIsADeletedPassword) return;
+
+                    if (filter!=null) {
+                        final Map<String,Password> matching = Controller.getMatching(filter);
+                        if (matching.containsKey(p.getId())) getItems().add(p);
+                    }
+                    else {
+                        getItems().add(p);
+                    }
+                });
+
             }
         });
     }
@@ -163,8 +162,7 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
             private void removePassword(Password p) {
                 String id = p.getId();
                 Platform.runLater(() -> {
-                    Password toRemove=elements.remove(id);
-                    if (toRemove!=null) getItems().remove(toRemove);
+                    getItems().stream().filter(found->id.equals(found.getId())).findFirst().ifPresent(found->getItems().remove(found));
                 });
             }
         });
@@ -178,12 +176,11 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
             getItems().clear();
             if (text!=null && !"".equals(text)) {
                 matching=Controller.getMatching(text);
-                for (Password el:elements.values()) {
-                    if (matching.containsKey(el.getId())) getItems().add(el);
-                }
+                matching.values().stream().forEach(el->getItems().add(el));
             }
             else {
-                getItems().addAll(elements.values());
+                matching=Controller.getMatching(null);
+                getItems().addAll(matching.values());
             }
 
         });
@@ -198,7 +195,6 @@ public class PasswordList extends ListView<Password> implements Observer,Passwor
         ((PasswordStoreEvent)arg).accept(this);
     }
 
-    Map<String,Password> elements;
     private final Consumer<Password> selectedPasswordChange;
 
     private String filter;
