@@ -1,8 +1,6 @@
 package org.beynet.gui;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -102,6 +100,11 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
                 else {
                     webPasswords.getChildren().add(new TreeItem<>(new PasswordTreeNode(t)));
                 }
+                webPasswords.getChildren().sort((p1,p2)->{
+                    PasswordTreeNode item1 = (PasswordTreeNode) p1.getValue();
+                    PasswordTreeNode item2 = (PasswordTreeNode) p2.getValue();
+                    return item1.getText().compareTo(item2.getText());
+                });
 
             }
 
@@ -122,6 +125,11 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
                 else {
                     notes.getChildren().add(new TreeItem<>(new PasswordTreeNode(note)));
                 }
+                notes.getChildren().sort((p1,p2)->{
+                    PasswordTreeNode item1 = (PasswordTreeNode) p1.getValue();
+                    PasswordTreeNode item2 = (PasswordTreeNode) p2.getValue();
+                    return item1.getText().compareTo(item2.getText());
+                });
             }
 
             @Override
