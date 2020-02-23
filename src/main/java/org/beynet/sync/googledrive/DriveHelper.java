@@ -107,7 +107,7 @@ public class DriveHelper {
         final int responseCode = urlConnection.getResponseCode();
         if (responseCode==200) {
             try(InputStream is =urlConnection.getInputStream()){
-                result = Optional.of(readAllByte(is));
+                result = Optional.of(HttpHelper.readAllByte(is));
             }
         }
         else {
@@ -120,7 +120,7 @@ public class DriveHelper {
             }
             try (InputStream response = is) {
                 if (responseCode!=401) {
-                    final String json = getJsonString(response);
+                    final String json = HttpHelper.getJsonString(response);
                     throw new IOException("Error received from serveur code=" + responseCode + " message=" + json);
                 }
                 else {
@@ -133,27 +133,6 @@ public class DriveHelper {
     }
 
 
-    /**
-     * read a string from steam
-     * @param is
-     * @return
-     * @throws IOException
-     */
-    static String getJsonString(InputStream is) throws IOException {
-        return new String(readAllByte(is),"UTF-8");
-    }
-
-
-    static byte[] readAllByte(InputStream is) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        while (true) {
-            final int read = is.read(buffer);
-            if (read==-1) break;
-            result.write(buffer,0,read);
-        }
-        return result.toByteArray();
-    }
 
     private final static Logger logger = Logger.getLogger(DriveHelper.class);
 }

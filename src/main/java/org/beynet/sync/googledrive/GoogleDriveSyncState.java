@@ -336,7 +336,7 @@ public enum GoogleDriveSyncState {
         final int responseCode = urlConnection.getResponseCode();
         if (responseCode==200) {
             try(InputStream is =urlConnection.getInputStream()){
-                return getJsonString(is);
+                return HttpHelper.getJsonString(is);
             }
         }
         else {
@@ -348,7 +348,7 @@ public enum GoogleDriveSyncState {
                 is = urlConnection.getInputStream();
             }
             try (InputStream response = is) {
-                final String json = getJsonString(response);
+                final String json = HttpHelper.getJsonString(response);
                 if (responseCode>=400 && responseCode<500) {
                     throw new AuthenticationException();
                 }
@@ -356,27 +356,6 @@ public enum GoogleDriveSyncState {
             }
 
         }
-    }
-
-    byte[] readAllByte(InputStream is) throws IOException {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        while (true) {
-            final int read = is.read(buffer);
-            if (read==-1) break;
-            result.write(buffer,0,read);
-        }
-        return result.toByteArray();
-    }
-
-    /**
-     * read a string from steam
-     * @param is
-     * @return
-     * @throws IOException
-     */
-    String getJsonString(InputStream is) throws IOException {
-        return new String(readAllByte(is),"UTF-8");
     }
 
     private void writeString(OutputStream os,String toWrite) throws IOException {
@@ -393,12 +372,12 @@ public enum GoogleDriveSyncState {
     protected void modifyUploadedFile(Map<String,Object> credentials,byte[] file) throws IOException {
         JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
         final String id = remoteFile.get("id").getTextValue();
-        String url = new String("https://www.googleapis.com/upload/drive/v3/files/"+id+"?uploadType=media");
+        String url = "https://www.googleapis.com/upload/drive/v3/files/"+id+"?uploadType=media";
         logger.info("will update file id="+id+" url="+url);
         HttpURLConnection httpURLConnection = DriveHelper.buildURLConnection(url, credentials);
         httpURLConnection.setRequestProperty("Content-Type","application/dat");
         httpURLConnection.setRequestProperty("Content-Length",""+file.length);
-        httpURLConnection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+        httpURLConnection.setRequestProperty("X-HTTP-Method-Override", "PATCH"); // force PATCH method
         httpURLConnection.setRequestMethod("POST");
         httpURLConnection.setDoOutput(true);
         try (OutputStream os = httpURLConnection.getOutputStream()) {
@@ -440,7 +419,7 @@ public enum GoogleDriveSyncState {
         final int responseCode = urlConnection.getResponseCode();
         if (responseCode<300) {
             try(InputStream is =urlConnection.getInputStream()){
-                final String jsonString = getJsonString(is);
+                final String jsonString = HttpHelper.getJsonString(is);
                 logger.debug("file uploaded - response ="+ jsonString);
                 ObjectMapper mapper = new ObjectMapper();
                 credentials.put(REMOTE_FILE, mapper.readTree(jsonString));
@@ -456,7 +435,7 @@ public enum GoogleDriveSyncState {
             }
             try (InputStream is2 = is) {
                 if (responseCode!=401) {
-                    final String error = getJsonString(is2);
+                    final String error = HttpHelper.getJsonString(is2);
                     throw new IOException("Error received from serveur code=" + responseCode + " message=" + error);
                 }
                 else {
