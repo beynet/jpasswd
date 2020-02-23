@@ -10,7 +10,6 @@ import org.beynet.model.Observer;
 import org.beynet.sync.AuthenticationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by beynet on 03/11/14.
@@ -136,55 +136,14 @@ public enum GoogleDriveSyncState {
         // -----------------------------------
         JsonNode searchApplicationFileId(Map<String,Object> credentials) throws IOException {
             logger.debug("search expected file on server");
-            URL url ;
-            try {
-                url =new URL("https://www.googleapis.com/drive/v2/files?access_token="+credentials.get(ACCESS_TOKEN));
-            } catch (MalformedURLException e) {
-                throw new RuntimeException("url should be valid",e);
-            }
-            final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setDoOutput(false);
-            final int responseCode = urlConnection.getResponseCode();
-            if (responseCode==200) {
-                try(InputStream is =urlConnection.getInputStream()){
-                    String listFiles = getJsonString(is);
-                    logger.debug("files found=\n"+listFiles);
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode actualObj = mapper.readTree(listFiles);
-                    final ArrayNode items = (ArrayNode)actualObj.get("items");
-                    for (int i=0;i<items.size();i++) {
-                        JsonNode fileNode = items.get(i);
-                        final JsonNode title = fileNode.get("title");
-                        final JsonNode id = fileNode.get("id");
-                        final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed"); // skipping file in trash
-
-                        if (title!=null && id!=null && Config.getInstance().getFileName().equals(title.getTextValue()) &&
-                            (explicitlyTrashed==null|| explicitlyTrashed.getBooleanValue()==false)
-                            ) {
-                            logger.info("file found on server with id="+id.getTextValue());
-                            return fileNode;
-                        }
-                    }
-                    logger.info("file not found on server");
-                }
-            }
-            else {
-                InputStream is ;
-                if (responseCode>=400) {
-                    is = urlConnection.getErrorStream();
-                }
-                else {
-                    is = urlConnection.getInputStream();
-                }
-                try (InputStream response = is) {
-                    if (responseCode!=401) {
-                        final String json = getJsonString(response);
-                        throw new IOException("Error received from serveur code=" + responseCode + " message=" + json);
-                    }
-                    else {
-                        credentials.remove(ACCESS_TOKEN);
-                    }
+            String url =  "https://www.googleapis.com/drive/v3/files?fields=files(explicitlyTrashed,id,name)";
+            Optional<String> optFileList = ListFilesReader.readUTF8String(url,credentials);
+            if (optFileList.isPresent()) {
+                String fileListStr = optFileList.get();
+                logger.debug("file list found "+fileListStr);
+                Optional<JsonNode> optFileFromListV3 = ListFilesReader.getFileFromListV3(fileListStr);
+                if (optFileFromListV3.isPresent()) {
+                    return optFileFromListV3.get();
                 }
             }
             return null;
@@ -229,41 +188,14 @@ public enum GoogleDriveSyncState {
          */
         private void mergeWithRemote(Map<String,Object> credentials) throws IOException {
             JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
-            final String downloadUrlStr = remoteFile.get("downloadUrl").getTextValue();
-            final URL downloadUrl = new URL(downloadUrlStr +"&access_token="+credentials.get(ACCESS_TOKEN));
-
-            final HttpURLConnection urlConnection = (HttpURLConnection) downloadUrl.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setDoOutput(false);
-            final int responseCode = urlConnection.getResponseCode();
-            if (responseCode==200) {
-                try(InputStream is =urlConnection.getInputStream()){
-                    byte[] remoteFileContent = readAllByte(is);
-                    try {
-                        Config.getInstance().merge(remoteFileContent);
-                        logger.debug("remote file merged");
-                    } catch (PasswordMismatchException e) {
-                        logger.error("fail to merge : password mismatch");
-                    }
-                }
-            }
-            else {
-                InputStream is ;
-                if (responseCode>=400) {
-                    is = urlConnection.getErrorStream();
-                }
-                else {
-                    is = urlConnection.getInputStream();
-                }
-                try (InputStream response = is) {
-                    if (responseCode!=401) {
-                        final String json = getJsonString(response);
-                        throw new IOException("Error received from serveur code=" + responseCode + " message=" + json);
-                    }
-                    else {
-                        credentials.remove(ACCESS_TOKEN);
-                    }
-                }
+            final String downloadUrlStr = "https://www.googleapis.com/drive/v3/files/"+remoteFile.get("id").getTextValue()+"?alt=media";
+            Optional<byte[]> optRemoteFileContent = ListFilesReader.readBytes(downloadUrlStr,credentials);
+            byte[] remoteFileContent = optRemoteFileContent.get();
+            try {
+                Config.getInstance().merge(remoteFileContent);
+                logger.debug("remote file merged");
+            } catch (PasswordMismatchException e) {
+                logger.error("fail to merge : password mismatch");
             }
         }
     },
@@ -460,27 +392,41 @@ public enum GoogleDriveSyncState {
     private void writeString(OutputStream os,String toWrite) throws IOException {
         os.write(toWrite.getBytes("UTF-8"));
     }
-    /**
-     * method called to upload the file when this file does not already exist
-     * @param file
-     * @throws IOException
-     */
+
+
     protected void createNewFile(Map<String,Object> credentials,byte[] file) throws IOException {
-        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
-        uploadFile(credentials,file,r,"POST");
+        String urlStr = new String("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart");
+        uploadFile(credentials,file,urlStr,"POST");
     }
+
 
     protected void modifyUploadedFile(Map<String,Object> credentials,byte[] file) throws IOException {
         JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
         final String id = remoteFile.get("id").getTextValue();
-        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files/"+id+"?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
-        logger.info("will update file id="+id);
-        uploadFile(credentials,file, r, "PUT");
+        String url = new String("https://www.googleapis.com/upload/drive/v3/files/"+id+"?uploadType=media");
+        logger.info("will update file id="+id+" url="+url);
+        HttpURLConnection httpURLConnection = ListFilesReader.buildURLConnection(url, credentials);
+        httpURLConnection.setRequestProperty("Content-Type","application/dat");
+        httpURLConnection.setRequestProperty("Content-Length",""+file.length);
+        httpURLConnection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+        httpURLConnection.setRequestMethod("POST");
+        httpURLConnection.setDoOutput(true);
+        try (OutputStream os = httpURLConnection.getOutputStream()) {
+            os.write(file);
+        }
+        Optional<byte[]> bytes = ListFilesReader.readBytesResponse(httpURLConnection, credentials);
+        if (bytes.isPresent()) {
+            final String jsonString = new String(bytes.get(),"UTF-8");
+            logger.debug("file uploaded - response ="+ jsonString);
+            ObjectMapper mapper = new ObjectMapper();
+            credentials.put(REMOTE_FILE, mapper.readTree(jsonString));
+        }
     }
 
-    protected void uploadFile(Map<String,Object> credentials,byte[] file,URL r,String httpMethod) throws IOException {
+
+    protected void uploadFile(Map<String,Object> credentials,byte[] file,String urlStr,String httpMethod) throws IOException {
         ByteArrayOutputStream response = new ByteArrayOutputStream();
-        final String json ="{\"title\":\""+Config.getInstance().getFileName()+"\"}";
+        final String json ="{\"name\":\""+Config.getInstance().getFileName()+"\"}";
         final String part ="jpasswd_part";
 
         writeString(response, "--" + part + "\r\n");
@@ -491,7 +437,7 @@ public enum GoogleDriveSyncState {
         response.write(file);
         writeString(response,"\r\n--"+part+"--\r\n");
 
-        final HttpURLConnection urlConnection = (HttpURLConnection) r.openConnection();
+        final HttpURLConnection urlConnection = ListFilesReader.buildURLConnection(urlStr,credentials);
         urlConnection.setRequestProperty("Content-Type","multipart/related; boundary=\""+part+"\"");
         urlConnection.setRequestProperty("Content-Length",Integer.valueOf(response.size()).toString());
         urlConnection.setRequestMethod(httpMethod);
@@ -532,8 +478,8 @@ public enum GoogleDriveSyncState {
 
     private final static Logger logger = Logger.getLogger(GoogleDriveSyncState.class);
 
-    private final static String CLIENT_ID     = "73790136390-12qcthfps4lr641tdclq3irroi2pf9dh.apps.googleusercontent.com";
-    private final static String CLIENT_SECRET = "2cn_GFJrnHDNyNQHn69o-zHt";
+    private final static String CLIENT_ID     = "852683704707-03hsoogpu5i2g5oua3ipd706cuj76dsc.apps.googleusercontent.com";
+    private final static String CLIENT_SECRET = "PmBzxHcXpmTpyK3xMM5g_Xw_";
     private final static String REDIRECT_URI  = "http://localhost";
 
     public final static String ACCESS_TOKEN   = "access_token";

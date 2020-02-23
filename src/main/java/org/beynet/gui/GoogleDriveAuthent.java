@@ -20,9 +20,10 @@ public class GoogleDriveAuthent extends Dialog {
         final WebView browser = new WebView();
         final WebEngine webEngine = browser.getEngine();
 
-
+        webEngine.setUserAgent("jpasswd");
 
         webEngine.locationProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println("old="+oldValue+" new="+newValue);
             if (newValue!=null && newValue.startsWith("http://localhost")) {
                 setCode.accept(getCodeFromURL(newValue));
                 synchronized (mutex) {
@@ -52,7 +53,7 @@ public class GoogleDriveAuthent extends Dialog {
         else {
             code = afterCode.substring(0,offset);
         }
-        return code;
+        return code.replaceAll("%2F","/");
     }
 
     private Object mutex;
