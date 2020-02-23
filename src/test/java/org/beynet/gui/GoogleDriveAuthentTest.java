@@ -1,15 +1,10 @@
 package org.beynet.gui;
 
 import org.beynet.model.store.RootTest;
-import org.beynet.sync.googledrive.ListFilesReader;
+import org.beynet.sync.googledrive.DriveHelper;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -41,7 +36,7 @@ public class GoogleDriveAuthentTest extends RootTest {
             "}\n";
     @Test
     public void readFileId() throws Exception {
-        Optional<JsonNode> fileFromListV3 = ListFilesReader.getFileFromListV3(listFilesResultV3);
+        Optional<JsonNode> fileFromListV3 = DriveHelper.getApplicationFileFromResultList(listFilesResultV3);
         assertThat(fileFromListV3.isPresent(),is(true));
         JsonNode node = fileFromListV3.get();
         assertThat(node.get("id").getTextValue(),is("1gxxEdQ9uHgvc3UKxKJoD8tMmAPhxhhuj"));

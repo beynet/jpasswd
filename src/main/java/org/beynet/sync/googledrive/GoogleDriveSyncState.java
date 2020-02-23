@@ -134,24 +134,14 @@ public enum GoogleDriveSyncState {
     MERGE_WITH_REMOTE {
         // search for expected file on gdrive
         // -----------------------------------
-        JsonNode searchApplicationFileId(Map<String,Object> credentials) throws IOException {
+        Optional<JsonNode> searchApplicationFileId(Map<String,Object> credentials) throws IOException {
             logger.debug("search expected file on server");
-            String url =  "https://www.googleapis.com/drive/v3/files?fields=files(explicitlyTrashed,id,name)";
-            Optional<String> optFileList = ListFilesReader.readUTF8String(url,credentials);
-            if (optFileList.isPresent()) {
-                String fileListStr = optFileList.get();
-                logger.debug("file list found "+fileListStr);
-                Optional<JsonNode> optFileFromListV3 = ListFilesReader.getFileFromListV3(fileListStr);
-                if (optFileFromListV3.isPresent()) {
-                    return optFileFromListV3.get();
-                }
-            }
-            return null;
+            return DriveHelper.getApplicationFileJsonNode(credentials);
         }
         @Override
         public GoogleDriveSyncState _process(Map<String, Object> credentials) {
             logger.debug("MERGE");
-            JsonNode remoteFileNode;
+            Optional<JsonNode> remoteFileNode;
             while(true) {
                 try {
                     remoteFileNode = searchApplicationFileId(credentials);
@@ -167,8 +157,9 @@ public enum GoogleDriveSyncState {
                 }
             }
             if (credentials.get(REFRESH_TOKEN)==null) return AUTHENT;
-            if (remoteFileNode != null) {
-                credentials.put(REMOTE_FILE,remoteFileNode);
+
+            if (remoteFileNode.isPresent()) {
+                credentials.put(REMOTE_FILE,remoteFileNode.get());
                 try {
                     mergeWithRemote(credentials);
                 } catch (IOException e) {
@@ -188,8 +179,7 @@ public enum GoogleDriveSyncState {
          */
         private void mergeWithRemote(Map<String,Object> credentials) throws IOException {
             JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
-            final String downloadUrlStr = "https://www.googleapis.com/drive/v3/files/"+remoteFile.get("id").getTextValue()+"?alt=media";
-            Optional<byte[]> optRemoteFileContent = ListFilesReader.readBytes(downloadUrlStr,credentials);
+            Optional<byte[]> optRemoteFileContent = DriveHelper.downloadFile(remoteFile.get("id").getTextValue(),credentials);
             byte[] remoteFileContent = optRemoteFileContent.get();
             try {
                 Config.getInstance().merge(remoteFileContent);
@@ -405,7 +395,7 @@ public enum GoogleDriveSyncState {
         final String id = remoteFile.get("id").getTextValue();
         String url = new String("https://www.googleapis.com/upload/drive/v3/files/"+id+"?uploadType=media");
         logger.info("will update file id="+id+" url="+url);
-        HttpURLConnection httpURLConnection = ListFilesReader.buildURLConnection(url, credentials);
+        HttpURLConnection httpURLConnection = DriveHelper.buildURLConnection(url, credentials);
         httpURLConnection.setRequestProperty("Content-Type","application/dat");
         httpURLConnection.setRequestProperty("Content-Length",""+file.length);
         httpURLConnection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
@@ -414,7 +404,7 @@ public enum GoogleDriveSyncState {
         try (OutputStream os = httpURLConnection.getOutputStream()) {
             os.write(file);
         }
-        Optional<byte[]> bytes = ListFilesReader.readBytesResponse(httpURLConnection, credentials);
+        Optional<byte[]> bytes = DriveHelper.readBytesResponse(httpURLConnection, credentials);
         if (bytes.isPresent()) {
             final String jsonString = new String(bytes.get(),"UTF-8");
             logger.debug("file uploaded - response ="+ jsonString);
@@ -437,7 +427,7 @@ public enum GoogleDriveSyncState {
         response.write(file);
         writeString(response,"\r\n--"+part+"--\r\n");
 
-        final HttpURLConnection urlConnection = ListFilesReader.buildURLConnection(urlStr,credentials);
+        final HttpURLConnection urlConnection = DriveHelper.buildURLConnection(urlStr,credentials);
         urlConnection.setRequestProperty("Content-Type","multipart/related; boundary=\""+part+"\"");
         urlConnection.setRequestProperty("Content-Length",Integer.valueOf(response.size()).toString());
         urlConnection.setRequestMethod(httpMethod);

@@ -15,28 +15,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 
-public class ListFilesReader {
-    Optional<JsonNode> getFileFromListV2(final String listFiles) throws IOException {
-        Optional<JsonNode> result = Optional.empty();
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode actualObj = mapper.readTree(listFiles);
-        final ArrayNode items = (ArrayNode)actualObj.get("items");
-        for (int i=0;i<items.size();i++) {
-            JsonNode fileNode = items.get(i);
-            final JsonNode title = fileNode.get("title");
-            final JsonNode id = fileNode.get("id");
-            final JsonNode explicitlyTrashed = fileNode.get("explicitlyTrashed"); // skipping file in trash
-
-            if (title!=null && id!=null && Config.getInstance().getFileName().equals(title.getTextValue()) &&
-                    (explicitlyTrashed==null|| explicitlyTrashed.getBooleanValue()==false)
-            ) {
-                logger.info("file found on server with id="+id.getTextValue());
-                result = Optional.of(fileNode);
-            }
-        }
-
-        return result;
-    }
+public class DriveHelper {
 
     public static Optional<JsonNode> parseNode(final String node) throws IOException {
         Optional<JsonNode> result = Optional.empty();
@@ -47,7 +26,7 @@ public class ListFilesReader {
         return result;
     }
 
-    public static Optional<JsonNode> getFileFromListV3(final String listFiles) throws IOException {
+    public static Optional<JsonNode> getApplicationFileFromResultList(final String listFiles) throws IOException {
         Optional<JsonNode> result = Optional.empty();
 
         Optional<JsonNode> optJsonNodeList = parseNode(listFiles);
@@ -86,18 +65,35 @@ public class ListFilesReader {
         return urlConnection;
     }
 
-    public static Optional<String> readUTF8String(String urlStr, Map<String,Object> credentials) throws IOException {
+    public static Optional<JsonNode> getApplicationFileJsonNode(Map<String,Object> credentials) throws IOException {
+        Optional<JsonNode> result = Optional.empty();
+        String url =  "https://www.googleapis.com/drive/v3/files?fields=files(explicitlyTrashed,id,name)";
+        Optional<String> optFileList = readUTF8StringFromResourceWithGET(url,credentials);
+        if (optFileList.isPresent()) {
+            String fileListStr = optFileList.get();
+            logger.debug("file list found "+fileListStr);
+            result = getApplicationFileFromResultList(fileListStr);
+        }
+        return result;
+    }
+
+    public static Optional<String> readUTF8StringFromResourceWithGET(String urlStr, Map<String,Object> credentials) throws IOException {
         Optional<String> result = Optional.empty();
-        Optional<byte[]> optBytes = readBytes(urlStr,credentials);
+        Optional<byte[]> optBytes = readBytesFromRessourceWithGET(urlStr,credentials);
         if (optBytes.isPresent()) {
             result = Optional.of(new String(optBytes.get(),"UTF-8"));
         }
         return result;
     }
 
-    public static Optional<byte[]> readBytes(String urlStr, Map<String,Object> credentials) throws IOException {
-        logger.info("calling url "+urlStr);
 
+    public static Optional<byte[]> downloadFile(String fileID,Map<String,Object> credentials) throws IOException{
+        final String downloadUrlStr = "https://www.googleapis.com/drive/v3/files/"+fileID+"?alt=media";
+        return DriveHelper.readBytesFromRessourceWithGET(downloadUrlStr,credentials);
+    }
+
+    public static Optional<byte[]> readBytesFromRessourceWithGET(String urlStr, Map<String,Object> credentials) throws IOException {
+        logger.info("calling url "+urlStr);
 
         final HttpURLConnection urlConnection = buildURLConnection(urlStr,credentials);
         urlConnection.setRequestMethod("GET");
@@ -159,5 +155,5 @@ public class ListFilesReader {
         return result.toByteArray();
     }
 
-    private final static Logger logger = Logger.getLogger(ListFilesReader.class);
+    private final static Logger logger = Logger.getLogger(DriveHelper.class);
 }
