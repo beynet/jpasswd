@@ -295,7 +295,7 @@ public enum GoogleDriveSyncState {
                     return STOP;
                 }
             }
-            Config.getInstance().getPasswordStore().deleteObserver(obs);
+            Config.getInstance().getPasswordStore().deleteObserver​(obs);
             return SEND_FILE;
         }
     },
