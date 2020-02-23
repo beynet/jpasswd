@@ -11,8 +11,8 @@
             displayname="JPasswd"
             identifier="JPasswd"
 	    mainclassname="org.beynet.gui.Main">
-            <runtime dir="${env.JAVA_HOME}" />
-            <classpath file="target/jpasswd-1.0.2-SNAPSHOT-jar-with-dependencies.jar" />
+            <runtime dir="/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk/Contents/Home" />
+            <classpath file="target/jpasswd-1.0.4-jar-with-dependencies.jar" />
         </bundleapp>
     </target>
 

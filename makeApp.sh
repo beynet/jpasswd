@@ -1,5 +1,5 @@
 #!/bin/bash
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-9/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-12.0.1.jdk/Contents/Home/
 
 mvn clean package -Dmaven.test.skip=true && \
 $JAVA_HOME/bin/javapackager -deploy -native image -srcdir target -srcfiles jpasswd-1.0.4-jar-with-dependencies.jar -appclass org.beynet.gui.Main -name jpasswd -outdir ./target/app -outfile jpasswd && \
