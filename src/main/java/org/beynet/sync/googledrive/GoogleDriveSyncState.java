@@ -392,14 +392,11 @@ public enum GoogleDriveSyncState {
     private void writeString(OutputStream os,String toWrite) throws IOException {
         os.write(toWrite.getBytes("UTF-8"));
     }
-    /**
-     * method called to upload the file when this file does not already exist
-     * @param file
-     * @throws IOException
-     */
+
+
     protected void createNewFile(Map<String,Object> credentials,byte[] file) throws IOException {
-        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
-        uploadFile(credentials,file,r,"POST");
+        String urlStr = new String("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart");
+        uploadFile(credentials,file,urlStr,"POST");
     }
 
 
@@ -426,21 +423,10 @@ public enum GoogleDriveSyncState {
         }
     }
 
-    protected void modifyUploadedFileV2(Map<String,Object> credentials,byte[] file) throws IOException {
-        JsonNode remoteFile = (JsonNode) credentials.get(REMOTE_FILE);
-        final String id = remoteFile.get("id").getTextValue();
-        URL r = new URL("https://www.googleapis.com/upload/drive/v2/files/"+id+"?uploadType=multipart&access_token="+credentials.get(ACCESS_TOKEN));
-        logger.info("will update file id="+id);
-        uploadFile(credentials,file, r, "PUT");
-    }
 
-    protected void uploadFileV3(Map<String,Object> credentials,byte[] file,URL r,String httpMethod) throws IOException {
-
-    }
-
-    protected void uploadFile(Map<String,Object> credentials,byte[] file,URL r,String httpMethod) throws IOException {
+    protected void uploadFile(Map<String,Object> credentials,byte[] file,String urlStr,String httpMethod) throws IOException {
         ByteArrayOutputStream response = new ByteArrayOutputStream();
-        final String json ="{\"title\":\""+Config.getInstance().getFileName()+"\"}";
+        final String json ="{\"name\":\""+Config.getInstance().getFileName()+"\"}";
         final String part ="jpasswd_part";
 
         writeString(response, "--" + part + "\r\n");
@@ -451,7 +437,7 @@ public enum GoogleDriveSyncState {
         response.write(file);
         writeString(response,"\r\n--"+part+"--\r\n");
 
-        final HttpURLConnection urlConnection = (HttpURLConnection) r.openConnection();
+        final HttpURLConnection urlConnection = ListFilesReader.buildURLConnection(urlStr,credentials);
         urlConnection.setRequestProperty("Content-Type","multipart/related; boundary=\""+part+"\"");
         urlConnection.setRequestProperty("Content-Length",Integer.valueOf(response.size()).toString());
         urlConnection.setRequestMethod(httpMethod);
