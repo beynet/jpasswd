@@ -75,9 +75,14 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         Button confirm = new Button(labelResourceBundle.getString("save"));
         confirm.setMinWidth(confirmL.getLayoutBounds().getWidth()+20);
         confirm.setOnAction(p->{
+            String uriSTR = uri.getText();
+            if (uriSTR==null||"".equals(uriSTR)) {
+                new Alert(this,labelResourceBundle.getString("emptyuri")).show();
+                return;
+            }
             URI uriCreated ;
             try {
-                uriCreated = new URI(uri.getText());
+                uriCreated = new URI(uriSTR);
             }catch(Exception e) {
                 String message = labelResourceBundle.getString("invaliduri");
                 new Alert(this,message.replaceAll("VAL",(uri.getText()!=null?uri.getText():""))).show();
@@ -89,7 +94,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
                 return;
             }
             if (login.getText()==null||login.getText().isEmpty()) {
-                new Alert(this,labelResourceBundle.getString("emptyuri")).show();
+                new Alert(this,labelResourceBundle.getString("emptylogin")).show();
                 return;
             }
 
