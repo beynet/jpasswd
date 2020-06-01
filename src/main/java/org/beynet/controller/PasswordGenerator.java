@@ -9,7 +9,7 @@ public class PasswordGenerator {
     static final char[] LETTERS=new char[26*2];
     static final char[] NUMBERS=new char[10];
     static final char[] SYMBOLS={'@','&','_','!','§','%'};
-    static Random r = new Random();
+    static Random r = new Random(System.currentTimeMillis());
     static {
         // init numbers
         for (int i=0;i<10;i++) {
