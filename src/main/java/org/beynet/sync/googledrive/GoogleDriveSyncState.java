@@ -8,6 +8,7 @@ import org.beynet.gui.GoogleDriveAuthent;
 import org.beynet.model.Config;
 import org.beynet.model.Observer;
 import org.beynet.sync.AuthenticationException;
+import org.beynet.sync.HttpHelper;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -32,8 +33,8 @@ public enum GoogleDriveSyncState {
         @Override
         public GoogleDriveSyncState _process(Map<String, Object> credentials) {
             String refreshToken = Config.getInstance().getGoogleDriveRefreshToken();
-            if (refreshToken!=null) credentials.put(REFRESH_TOKEN,refreshToken);
-            else credentials.remove(REFRESH_TOKEN);
+            if (refreshToken!=null) credentials.put(HttpHelper.REFRESH_TOKEN,refreshToken);
+            else credentials.remove(HttpHelper.REFRESH_TOKEN);
             return AUTHENT;
         }
     },
@@ -49,7 +50,7 @@ public enum GoogleDriveSyncState {
                 // no refresh token - first authent we will connect
                 // to google oauth systems using embedded web browser
                 // --------------------------------------------------
-                if (credentials.get(REFRESH_TOKEN) == null) {
+                if (credentials.get(HttpHelper.REFRESH_TOKEN) == null) {
                     logger.debug("no tokens first authent");
                     this.code = null;
                     callAuthent((Stage) credentials.get(APPLICATION_MAIN_STAGE));
@@ -57,34 +58,34 @@ public enum GoogleDriveSyncState {
                         retrieveAccessTokenAndRefreshTokenFromCode(credentials);
                         break;
                     } catch (Exception e) {
-                        credentials.remove(REFRESH_TOKEN);
+                        credentials.remove(HttpHelper.REFRESH_TOKEN);
                     }
-                } else if (credentials.get(ACCESS_TOKEN) == null) {
+                } else if (credentials.get(HttpHelper.ACCESS_TOKEN) == null) {
                     logger.debug("using refresh token found");
                     try {
                         retrieveAccessTokenFromRefreshTokenCode(credentials);
                         break;
                     }
                     catch(AuthenticationException e) {
-                        credentials.remove(REFRESH_TOKEN);
+                        credentials.remove(HttpHelper.REFRESH_TOKEN);
                     }
                     catch (IOException e) {
                         logger.error("error - unable to obtain access token from refresh token", e);
-                        credentials.remove(REFRESH_TOKEN);
+                        credentials.remove(HttpHelper.REFRESH_TOKEN);
                     }
                 }
             }
-            if (credentials.get(REFRESH_TOKEN)!=null) Config.getInstance().updateGoogleDriveRefreshToken((String) credentials.get(REFRESH_TOKEN));
+            if (credentials.get(HttpHelper.REFRESH_TOKEN)!=null) Config.getInstance().updateGoogleDriveRefreshToken((String) credentials.get(HttpHelper.REFRESH_TOKEN));
             return MERGE_WITH_REMOTE;
         }
 
         void retrieveAccessTokenFromRefreshTokenCode(Map<String,Object> credentials) throws IOException,AuthenticationException {
             String query="refresh_token=$refreshToken&client_id=$client_id&grant_type=refresh_token&client_secret=$client_secret";
-            query=query.replace("$refreshToken", URLEncoder.encode((String)credentials.get(REFRESH_TOKEN), "UTF-8"));
+            query=query.replace("$refreshToken", URLEncoder.encode((String)credentials.get(HttpHelper.REFRESH_TOKEN), "UTF-8"));
             query=query.replace("$client_id",URLEncoder.encode(CLIENT_ID,"UTF-8"));
             query=query.replace("$client_secret",URLEncoder.encode(CLIENT_SECRET,"UTF-8"));
 
-            getAccessAndRefreshTokensFromJson(credentials,postStringXWWWFormUrlEncodedAndReturnResponseString(query, "https://accounts.google.com/o/oauth2/token"));
+            getAccessAndRefreshTokensFromJson(credentials,HttpHelper.postStringXWWWFormUrlEncodedAndReturnResponseString(query, "https://accounts.google.com/o/oauth2/token"));
         }
 
         void retrieveAccessTokenAndRefreshTokenFromCode(Map<String,Object> credentials) throws IOException,AuthenticationException {
@@ -94,8 +95,8 @@ public enum GoogleDriveSyncState {
             query=query.replace("$client_secret",URLEncoder.encode(CLIENT_SECRET,"UTF-8"));
             query=query.replace("$redirect_uri",URLEncoder.encode(REDIRECT_URI,"UTF-8"));
 
-            getAccessAndRefreshTokensFromJson(credentials,postStringXWWWFormUrlEncodedAndReturnResponseString(query,"https://accounts.google.com/o/oauth2/token"));
-            logger.info("logged in token="+credentials.get(ACCESS_TOKEN)+" refresh token="+credentials.get(REFRESH_TOKEN));
+            getAccessAndRefreshTokensFromJson(credentials,HttpHelper.postStringXWWWFormUrlEncodedAndReturnResponseString(query,"https://accounts.google.com/o/oauth2/token"));
+            logger.info("logged in token="+credentials.get(HttpHelper.ACCESS_TOKEN)+" refresh token="+credentials.get(HttpHelper.REFRESH_TOKEN));
         }
         /**
          * parse json object an expect to read access and refresh tokens
@@ -106,8 +107,8 @@ public enum GoogleDriveSyncState {
         void getAccessAndRefreshTokensFromJson(Map<String,Object> credentials,String json) throws IOException {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode actualObj = mapper.readTree(json);
-            credentials.put(ACCESS_TOKEN,actualObj.get(ACCESS_TOKEN)!=null?actualObj.get(ACCESS_TOKEN).getTextValue():null);
-            if (actualObj.get(REFRESH_TOKEN)!=null) credentials.put(REFRESH_TOKEN,actualObj.get(REFRESH_TOKEN).getTextValue());
+            credentials.put(HttpHelper.ACCESS_TOKEN,actualObj.get(HttpHelper.ACCESS_TOKEN)!=null?actualObj.get(HttpHelper.ACCESS_TOKEN).getTextValue():null);
+            if (actualObj.get(HttpHelper.REFRESH_TOKEN)!=null) credentials.put(HttpHelper.REFRESH_TOKEN,actualObj.get(HttpHelper.REFRESH_TOKEN).getTextValue());
         }
 
         private void callAuthent(Stage applicationMainStage) {
@@ -156,7 +157,7 @@ public enum GoogleDriveSyncState {
                     return STOP;
                 }
             }
-            if (credentials.get(REFRESH_TOKEN)==null) return AUTHENT;
+            if (credentials.get(HttpHelper.REFRESH_TOKEN)==null) return AUTHENT;
 
             if (remoteFileNode.isPresent()) {
                 credentials.put(REMOTE_FILE,remoteFileNode.get());
@@ -166,7 +167,7 @@ public enum GoogleDriveSyncState {
                     logger.error("unable to retrieve remote file",e);
                     return AUTHENT;
                 }
-                if (credentials.get(REFRESH_TOKEN)==null) return AUTHENT;
+                if (credentials.get(HttpHelper.REFRESH_TOKEN)==null) return AUTHENT;
             }
 
             return SEND_FILE;
@@ -220,7 +221,7 @@ public enum GoogleDriveSyncState {
                         break;
                     } catch (IOException e) {
                         //authent lost
-                        if (credentials.get(ACCESS_TOKEN)==null) {
+                        if (credentials.get(HttpHelper.ACCESS_TOKEN)==null) {
                             return AUTHENT;
                         }
                     }
@@ -252,7 +253,7 @@ public enum GoogleDriveSyncState {
                     }
                 } catch (IOException e) {
                     logger.error("ioexception ",e);
-                    if (credentials.get(ACCESS_TOKEN)!=null) {
+                    if (credentials.get(HttpHelper.ACCESS_TOKEN)!=null) {
                         return RETRY_SEND_FILE;
                     }
                     else {
@@ -302,61 +303,14 @@ public enum GoogleDriveSyncState {
     protected abstract GoogleDriveSyncState _process(Map<String, Object> credentials);
 
     public GoogleDriveSyncState process(Map<String, Object> credentials) {
-        logger.debug("inter in process "+toString());
-        if (!this.equals(START) && !this.equals(AUTHENT) && credentials.get(ACCESS_TOKEN) == null) {
+        logger.debug("enter in process "+toString());
+        if (!this.equals(START) && !this.equals(AUTHENT) && credentials.get(HttpHelper.ACCESS_TOKEN) == null) {
             return AUTHENT;
         }
         else return _process(credentials);
     }
 
-    /**
-     * post content of the string to url as a application/x-www-form-urlencoded"
-     * @param toBePosted
-     * @param url
-     * @return
-     * @throws java.io.IOException
-     */
-    protected String postStringXWWWFormUrlEncodedAndReturnResponseString(String toBePosted,String url) throws IOException, AuthenticationException {
-        final URL r;
-        try {
-            r = new URL(url);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("URL should be valid ", e);
-        }
-        final HttpURLConnection urlConnection = (HttpURLConnection) r.openConnection();
-        urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        urlConnection.setRequestMethod("POST");
-        urlConnection.setDoOutput(true);
-        urlConnection.setDoInput(true);
 
-
-        try (OutputStream os = urlConnection.getOutputStream()) {
-            os.write(toBePosted.getBytes("UTF-8"));
-        }
-        final int responseCode = urlConnection.getResponseCode();
-        if (responseCode==200) {
-            try(InputStream is =urlConnection.getInputStream()){
-                return HttpHelper.getJsonString(is);
-            }
-        }
-        else {
-            InputStream is ;
-            if (responseCode>=400) {
-                is = urlConnection.getErrorStream();
-            }
-            else {
-                is = urlConnection.getInputStream();
-            }
-            try (InputStream response = is) {
-                final String json = HttpHelper.getJsonString(response);
-                if (responseCode>=400 && responseCode<500) {
-                    throw new AuthenticationException();
-                }
-                else throw new IOException("Error received from serveur code="+responseCode+" message="+json);
-            }
-
-        }
-    }
 
     private void writeString(OutputStream os,String toWrite) throws IOException {
         os.write(toWrite.getBytes("UTF-8"));
@@ -374,7 +328,7 @@ public enum GoogleDriveSyncState {
         final String id = remoteFile.get("id").getTextValue();
         String url = "https://www.googleapis.com/upload/drive/v3/files/"+id+"?uploadType=media";
         logger.info("will update file id="+id+" url="+url);
-        HttpURLConnection httpURLConnection = DriveHelper.buildURLConnection(url, credentials);
+        HttpURLConnection httpURLConnection = HttpHelper.buildURLConnection(url, credentials);
         httpURLConnection.setRequestProperty("Content-Type","application/dat");
         httpURLConnection.setRequestProperty("Content-Length",""+file.length);
         httpURLConnection.setRequestProperty("X-HTTP-Method-Override", "PATCH"); // force PATCH method
@@ -383,7 +337,7 @@ public enum GoogleDriveSyncState {
         try (OutputStream os = httpURLConnection.getOutputStream()) {
             os.write(file);
         }
-        Optional<byte[]> bytes = DriveHelper.readBytesResponse(httpURLConnection, credentials);
+        Optional<byte[]> bytes = HttpHelper.readBytesResponse(httpURLConnection, credentials);
         if (bytes.isPresent()) {
             final String jsonString = new String(bytes.get(),"UTF-8");
             logger.debug("file uploaded - response ="+ jsonString);
@@ -406,7 +360,7 @@ public enum GoogleDriveSyncState {
         response.write(file);
         writeString(response,"\r\n--"+part+"--\r\n");
 
-        final HttpURLConnection urlConnection = DriveHelper.buildURLConnection(urlStr,credentials);
+        final HttpURLConnection urlConnection = HttpHelper.buildURLConnection(urlStr,credentials);
         urlConnection.setRequestProperty("Content-Type","multipart/related; boundary=\""+part+"\"");
         urlConnection.setRequestProperty("Content-Length",Integer.valueOf(response.size()).toString());
         urlConnection.setRequestMethod(httpMethod);
@@ -439,7 +393,7 @@ public enum GoogleDriveSyncState {
                     throw new IOException("Error received from serveur code=" + responseCode + " message=" + error);
                 }
                 else {
-                    credentials.remove(ACCESS_TOKEN);
+                    credentials.remove(HttpHelper.ACCESS_TOKEN);
                 }
             }
         }
@@ -451,8 +405,7 @@ public enum GoogleDriveSyncState {
     private final static String CLIENT_SECRET = "PmBzxHcXpmTpyK3xMM5g_Xw_";
     private final static String REDIRECT_URI  = "http://localhost";
 
-    public final static String ACCESS_TOKEN   = "access_token";
-    public final static String REFRESH_TOKEN  = "refresh_token";
+
 
     public final static String APPLICATION_MAIN_STAGE = "mainStage";
     public final static String REMOTE_FILE = "remoteFile";

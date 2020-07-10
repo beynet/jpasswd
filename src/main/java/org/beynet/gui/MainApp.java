@@ -22,11 +22,13 @@ import org.beynet.model.Observer;
 import org.beynet.model.password.*;
 import org.beynet.model.store.*;
 import org.beynet.sync.googledrive.GoogleDriveSync;
+import org.beynet.sync.onedrive.OneDriveSync;
 import org.beynet.utils.I18NHelper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
@@ -36,7 +38,7 @@ public class MainApp extends Application {
 
     public static void main(String... args) {
         BasicConfigurator.configure();
-        Logger.getRootLogger().setLevel(Level.DEBUG);
+        Logger.getRootLogger().setLevel(Level.TRACE);
         if (args.length == 0) {
             Path userHome = Paths.get((String) System.getProperty("user.home"));
             savePath = userHome.resolve(".jpasswd");
@@ -122,6 +124,7 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         currentStage = primaryStage;
         GoogleDriveSync.init(primaryStage);
+        OneDriveSync.init(primaryStage);
         currentStage.setOnCloseRequest((t) -> quitApp());
         setTitle();
 
@@ -159,10 +162,10 @@ public class MainApp extends Application {
         });
 
 
-        passwordTree.setPrefHeight(currentScene.getHeight() - ((MenuBar) pane.getTop()).getHeight() - state.getHeight() - filter.getHeight());
+        passwordTree.setPrefHeight(currentScene.getHeight() - ((MenuBar) pane.getTop()).getHeight() - gDriveState.getHeight() - filter.getHeight());
         currentScene.heightProperty().addListener((observable, oldValue, newValue) -> {
             double size = ((MenuBar) pane.getTop()).getHeight();
-            passwordTree.setPrefHeight(newValue.doubleValue() -size-state.getPrefHeight()-filter.getHeight());
+            passwordTree.setPrefHeight(newValue.doubleValue() -size- gDriveState.getPrefHeight()-filter.getHeight());
         });
 
 
@@ -217,11 +220,21 @@ public class MainApp extends Application {
 
 
     private void addSyncStatus(BorderPane pane) {
-        state = new GoogleDriveVisualState();
-        pane.setBottom(state);
-        state.setMaxHeight(40);
-        state.setPrefHeight(40);
-        BorderPane.setAlignment(state, Pos.BOTTOM_LEFT);
+
+        HBox syncBox= new HBox();
+        pane.setBottom(syncBox);
+        BorderPane.setAlignment(syncBox, Pos.BOTTOM_LEFT);
+
+        gDriveState = new GoogleDriveVisualState();
+        gDriveState.setMaxHeight(40);
+        gDriveState.setPrefHeight(40);
+
+
+        oneDriveState = new OneDriveVisualState();
+        oneDriveState.setMaxHeight(40);
+        oneDriveState.setPrefHeight(40);
+
+        syncBox.getChildren().addAll(Arrays.asList(gDriveState,oneDriveState));
 
     }
 
@@ -337,8 +350,10 @@ public class MainApp extends Application {
             CheckMenuItem enableSyncToGoogleDrive = new GDriveSyncCheckMenu(currentStage, labelResourceBundle.getString("enablesynctogdrive"));
             enableSyncToGoogleDrive.setSelected(false);
 
+            CheckMenuItem enableSyncToOneDrive = new OneDriveSyncCheckMenu(currentStage, labelResourceBundle.getString("enablesynctoonedrive"));
+            enableSyncToOneDrive.setSelected(false);
 
-            tools.getItems().addAll(generatePassword, changeMainPassword, enableSyncToGoogleDrive, reIndexeLucene,compress);
+            tools.getItems().addAll(generatePassword, changeMainPassword, enableSyncToGoogleDrive, enableSyncToOneDrive,reIndexeLucene,compress);
         }
 
 
@@ -367,5 +382,6 @@ public class MainApp extends Application {
     private PasswordList passwordList;
     private PasswordTree passwordTree;
     private GridPane passwordContentPane;
-    private GoogleDriveVisualState state;
+    private GoogleDriveVisualState gDriveState;
+    private OneDriveVisualState oneDriveState;
 }

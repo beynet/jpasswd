@@ -78,6 +78,23 @@ public class PasswordStore extends Observable implements Serializable {
     }
 
     /**
+     * @return google drive refresh token if such a token exists in the data base or null
+     */
+    public String getOneDriveRefreshToken() {
+        synchronized (passwords) {
+            final Password found = passwords.get(OneDrive.ONE_DRIVE_ID);
+            if (found==null) return null;
+            if ( !(found instanceof OneDrive) ) {
+                passwords.remove(OneDrive.ONE_DRIVE_ID);
+                return null;
+            }
+            final OneDrive password = (OneDrive) found;
+            return password.getRefreshToken();
+        }
+    }
+
+
+    /**
      * save a new password in the database
      * @param p
      */

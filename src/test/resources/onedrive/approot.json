@@ -1,0 +1,50 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#drive/special/$entity",
+  "createdDateTime": "2020-07-07T18:38:25.023Z",
+  "cTag": "adDpFOEE0OUI4NEMzNTI0QTA1ITk5NjMzLjYzNzI5NzQzOTA1MDgzMDAwMA",
+  "eTag": "aRThBNDlCODRDMzUyNEEwNSE5OTYzMy4w",
+  "id": "E8A49B84C3524A05!99633",
+  "lastModifiedDateTime": "2020-07-07T18:38:25.083Z",
+  "name": "jpasswd",
+  "size": 0,
+  "webUrl": "https://1drv.ms/f/s!AAVKUsOEm6Tohoox",
+  "reactions": {
+    "commentCount": 0
+  },
+  "createdBy": {
+    "application": {
+      "displayName": "jpasswd",
+      "id": "4843f286"
+    },
+    "user": {
+      "displayName": "Yannick Beynet",
+      "id": "e8a49b84c3524a05"
+    }
+  },
+  "lastModifiedBy": {
+    "application": {
+      "displayName": "jpasswd",
+      "id": "4843f286"
+    },
+    "user": {
+      "displayName": "Yannick Beynet",
+      "id": "e8a49b84c3524a05"
+    }
+  },
+  "parentReference": {
+    "driveId": "e8a49b84c3524a05",
+    "driveType": "personal"
+  },
+  "fileSystemInfo": {
+    "createdDateTime": "2020-07-07T18:38:25.023Z",
+    "lastModifiedDateTime": "2020-07-07T18:38:25.023Z"
+  },
+  "folder": {
+    "childCount": 0,
+    "view": {
+      "viewType": "thumbnails",
+      "sortBy": "name",
+      "sortOrder": "ascending"
+    }
+  }
+}

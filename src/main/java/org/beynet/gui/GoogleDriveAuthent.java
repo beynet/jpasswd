@@ -1,10 +1,13 @@
 package org.beynet.gui;
 
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import org.w3c.dom.Document;
 
 import java.util.function.Consumer;
 
@@ -20,7 +23,7 @@ public class GoogleDriveAuthent extends Dialog {
         final WebView browser = new WebView();
         final WebEngine webEngine = browser.getEngine();
 
-        webEngine.setUserAgent("jpasswd");
+        webEngine.setUserAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
 
         webEngine.locationProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("old="+oldValue+" new="+newValue);
@@ -32,6 +35,15 @@ public class GoogleDriveAuthent extends Dialog {
                 close();
             }
         });
+
+        /*webEngine.getLoadWorker().stateProperty().addListener((observableValue, oldState, newState) -> {
+            if ("SUCCEEDED".equals(newState.name())) {
+                Document document = webEngine.getDocument();
+                System.out.println(newState);
+            }
+                });*/
+
+
         root.getChildren().addAll(browser);
         getRootGroup().getChildren().add(root);
         Platform.runLater(()->webEngine.load(authentURI));

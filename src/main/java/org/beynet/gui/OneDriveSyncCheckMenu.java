@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 import org.beynet.controller.Controller;
 import org.beynet.model.Observable;
 import org.beynet.model.Observer;
-import org.beynet.model.password.GoogleDrive;
+import org.beynet.model.password.OneDrive;
 import org.beynet.model.store.PasswordModifiedOrCreated;
 import org.beynet.model.store.PasswordRemoved;
 
@@ -14,21 +14,21 @@ import org.beynet.model.store.PasswordRemoved;
 /**
  * Created by beynet on 07/11/14.
  */
-public class GDriveSyncCheckMenu extends CheckMenuItem implements Observer {
+public class OneDriveSyncCheckMenu extends CheckMenuItem implements Observer {
 
     private Stage applicationMainStage;
 
-    public GDriveSyncCheckMenu(Stage applicationMainStage,String label) {
+    public OneDriveSyncCheckMenu(Stage applicationMainStage, String label) {
         super(label);
         this.applicationMainStage=applicationMainStage;
         setSelected(false);
         Controller.suscribeToPassword(this);
         setOnAction(evt->{
             if (this.isSelected()) {
-                Controller.enableGoogleDriveSync(this.applicationMainStage);
+                Controller.enableOneDriveSync(this.applicationMainStage);
             }
             else {
-                Controller.disableGoogleDriveSync();
+                Controller.disableOneDriveSync();
             }
         });
     }
@@ -36,24 +36,24 @@ public class GDriveSyncCheckMenu extends CheckMenuItem implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (arg!=null && arg instanceof PasswordModifiedOrCreated) {
-            if (((PasswordModifiedOrCreated) arg).getPassword() instanceof GoogleDrive) {
+            if (((PasswordModifiedOrCreated) arg).getPassword() instanceof OneDrive) {
                 if (isSelected() == false) {
                     Platform.runLater(() -> setSelected(true));
-                    Controller.enableGoogleDriveSync(this.applicationMainStage);
+                    Controller.enableOneDriveSync(this.applicationMainStage);
                 }
-                gdriveId = ((PasswordModifiedOrCreated) arg).getPassword().getId();
+                onedriveid = ((PasswordModifiedOrCreated) arg).getPassword().getId();
             }
         }
         else if (arg!=null && arg instanceof PasswordRemoved) {
-            if (gdriveId!=null && ((PasswordRemoved) arg).getPassword().getId().equals(gdriveId)) {
+            if (onedriveid !=null && ((PasswordRemoved) arg).getPassword().getId().equals(onedriveid)) {
                 if (isSelected()==true) {
                     Platform.runLater(() -> setSelected(false));
                 }
-                Controller.disableGoogleDriveSync();
+                Controller.disableOneDriveSync();
             }
             //Controller.enableGoogleDriveSync();
         }
     }
 
-    String gdriveId = null;
+    String onedriveid = null;
 }

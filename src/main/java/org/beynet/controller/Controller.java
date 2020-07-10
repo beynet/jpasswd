@@ -5,11 +5,13 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.beynet.gui.Alert;
 import org.beynet.gui.GoogleDriveVisualState;
+import org.beynet.gui.OneDriveVisualState;
 import org.beynet.model.Config;
 import org.beynet.model.MainPasswordError;
 import org.beynet.model.password.Password;
 import org.beynet.model.Observer;
 import org.beynet.sync.googledrive.GoogleDriveSync;
+import org.beynet.sync.onedrive.OneDriveSync;
 import org.beynet.utils.I18NHelper;
 
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.util.ResourceBundle;
 public class Controller {
 
     private static Thread gdriveSyncThread = null;
+    private static Thread oneDriveSyncThread = null;
 
     public static void enableGoogleDriveSync(Stage mainStage) {
         Platform.runLater(() -> {
@@ -42,10 +45,31 @@ public class Controller {
         });
     }
 
+    public static void enableOneDriveSync(Stage mainStage) {
+        Platform.runLater(() -> {
+            synchronized (Controller.class) {
+                //verify that previous thread is dead
+                if (oneDriveSyncThread!=null && oneDriveSyncThread.isAlive()) {
+                    new Alert(mainStage,"previous onedrive thread is not dead").show();
+                    return;
+                }
+                else {
+                    oneDriveSyncThread = new Thread(OneDriveSync.getInstance());
+                    oneDriveSyncThread.start();
+                }
+            }
+        });
+    }
+
 
     public static void subscribeToGDriveSyncStatusChange(GoogleDriveVisualState googleDriveVisualState) {
         GoogleDriveSync.getInstance().addObserver(googleDriveVisualState);
         googleDriveVisualState.update(GoogleDriveSync.getInstance(),GoogleDriveSync.getInstance().getGoogleDriveSyncState());
+    }
+
+    public static void subscribeToOneDriveSyncStatusChange(OneDriveVisualState oneDriveVisualState) {
+        OneDriveSync.getInstance().addObserver(oneDriveVisualState);
+        oneDriveVisualState.update(OneDriveSync.getInstance(),OneDriveSync.getInstance().getOneDriveSyncState());
     }
 
     public static void rebuildIndexes() {
@@ -72,6 +96,17 @@ public class Controller {
                 if (gdriveSyncThread != null && gdriveSyncThread.isAlive()) {
                     gdriveSyncThread.interrupt();
                     Config.getInstance().removeGoogleDrivePassword();
+                }
+            }
+        });
+    }
+
+    public static void disableOneDriveSync() {
+        Platform.runLater(() -> {
+            synchronized (Controller.class) {
+                if (oneDriveSyncThread != null && oneDriveSyncThread.isAlive()) {
+                    oneDriveSyncThread.interrupt();
+                    Config.getInstance().removeOneDrivePassword();
                 }
             }
         });

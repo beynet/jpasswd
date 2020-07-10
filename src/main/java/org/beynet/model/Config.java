@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import org.apache.log4j.Logger;
 import org.beynet.exceptions.PasswordMismatchException;
 import org.beynet.model.password.GoogleDrive;
+import org.beynet.model.password.OneDrive;
 import org.beynet.model.store.PasswordStore;
 
 import javax.crypto.Cipher;
@@ -89,12 +90,24 @@ public class Config implements Observer {
         getPasswordStore().savePassword(new GoogleDrive(refreshToken));
     }
 
+    public void updateOneDriveRefreshToken(String refreshToken) {
+        getPasswordStore().savePassword(new OneDrive(refreshToken));
+    }
+
     public void removeGoogleDrivePassword() {
         getPasswordStore().removePassword(new GoogleDrive("t").getId());
     }
 
+    public void removeOneDrivePassword() {
+        getPasswordStore().removePassword(new OneDrive("t").getId());
+    }
+
     public String getGoogleDriveRefreshToken() {
         return getPasswordStore().getGoogleDriveRefreshToken();
+    }
+
+    public String getOneDriveRefreshToken() {
+        return getPasswordStore().getOneDriveRefreshToken();
     }
 
     public byte[] completeTo128Bits(String password) throws UnsupportedEncodingException {
