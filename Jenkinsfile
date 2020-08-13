@@ -9,8 +9,10 @@ pipeline {
     }
     stages {
         stage('Change version') {
-            echo 'Release ${params.release}'
-             sh 'mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false'
+            steps {
+                echo 'Release ${params.release}'
+                sh 'mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false'
+            }
         }
         stage('Build') {
             steps {
@@ -20,7 +22,9 @@ pipeline {
             }
         }
         stage('Tag and push') {
-            echo 'git tag and push'
+            steps {
+                echo 'git tag and push'
+            }
         }
 
 
