@@ -5,15 +5,13 @@ pipeline {
             jdk 'openjdk14'
     }
     parameters {
+            choice(
+                        choices: ['oui' , 'non'],
+                        description: '',
+                        name: 'isRelease')
             string(name: 'release', description: 'Release number')
     }
     stages {
-        stage('Change version') {
-            steps {
-                echo 'Release ${params.release}'
-                sh 'mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false'
-            }
-        }
         stage('Build') {
             steps {
                 echo 'Building..'
@@ -21,9 +19,17 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*jar', fingerprint: true
             }
         }
-        stage('Tag and push') {
+        stage('Release') {
+            when {
+                // Only say hello if a "greeting" is requested
+                expression { params.isRelease == 'oui' }
+            }
             steps {
-                echo 'git tag and push'
+                echo "Release ${params.release}"
+                sh "mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false"
+                sh 'mvn package -Dmaven.test.skip=true'
+                sh "git tag jpasswd-${params.release}"
+                archiveArtifacts artifacts: 'target/*jar', fingerprint: true
             }
         }
 
