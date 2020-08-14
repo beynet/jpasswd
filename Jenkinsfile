@@ -26,15 +26,12 @@ pipeline {
             }
 
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'GITHUB', keyFileVariable: '', passphraseVariable: '', usernameVariable: '')]) {
-                            // some block
-                            echo "Release ${params.release}"
-                                            sh "mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false"
-                                            sh 'mvn package -Dmaven.test.skip=true'
-                                            sh "git tag jpasswd-${params.release}"
-                                            sh "git push --tags"
-                                            archiveArtifacts artifacts: 'target/*jar', fingerprint: true
-                }
+                echo "Release ${params.release}"
+                sh "mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false"
+                sh 'mvn package -Dmaven.test.skip=true'
+                sh "git tag jpasswd-${params.release}"
+                sh "git push --tags"
+                archiveArtifacts artifacts: 'target/*jar', fingerprint: true
 
             }
         }
