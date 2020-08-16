@@ -8,6 +8,7 @@ pipeline {
             choice(
                         choices: ['oui' , 'non'],
                         description: '',
+                        defaultValue:'non',
                         name: 'isRelease')
             string(name: 'release', description: 'Release number')
     }
