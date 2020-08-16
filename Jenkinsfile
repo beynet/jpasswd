@@ -30,9 +30,10 @@ pipeline {
                 sh "mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false"
                 sh 'mvn package -Dmaven.test.skip=true'
                 sh "git tag jpasswd-${params.release}"
-                sh "git push --tags"
-                archiveArtifacts artifacts: 'target/*jar', fingerprint: true
-
+                sshagent (credentials: ['GITHUB']) { {
+                    sh "git push --tags"
+                    archiveArtifacts artifacts: 'target/*jar', fingerprint: true
+                }
             }
         }
 
