@@ -10,6 +10,7 @@ pipeline {
                         description: '',
                         name: 'isRelease')
             string(name: 'release', description: 'Release number')
+            string(name: 'BRANCHE', description: 'git branch name')
     }
     stages {
         stage('Build') {
@@ -27,6 +28,7 @@ pipeline {
 
             steps {
                 echo "Release ${params.release}"
+                sh "git branch --set-upstream-to=origin/${params.BRANCHE} ${params.BRANCHE}"
                 sh "mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false"
                 sh 'mvn package -Dmaven.test.skip=true'
                 sh "git add pom.xml && git commit -m'version ${params.release}'"
