@@ -29,6 +29,7 @@ pipeline {
                 echo "Release ${params.release}"
                 sh "mvn versions:set -DnewVersion=${params.release} -DgenerateBackupPoms=false"
                 sh 'mvn package -Dmaven.test.skip=true'
+                sh "git add pom.xml && git commit -m'version ${params.release}'"
                 sh "git tag jpasswd-${params.release}"
                 sshagent (credentials: ['GITHUB']) {
                     sh "git push --tags"
