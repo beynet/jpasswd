@@ -34,7 +34,7 @@ pipeline {
                 sh "git add pom.xml && git commit -m'version ${params.release}'"
                 sh "git tag jpasswd-${params.release}"
                 sshagent (credentials: ['GITHUB']) {
-                    sh "git push --tags"
+                    sh "git push && git push --tags"
                     archiveArtifacts artifacts: 'target/*jar', fingerprint: true
                 }
             }
