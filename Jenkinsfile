@@ -10,7 +10,7 @@ pipeline {
                         description: '',
                         name: 'isRelease')
             string(name: 'release', description: 'Release number')
-            string(name: 'BRANCHE', description: 'git branch name')
+            string(defaultValue: 'master',name: 'BRANCHE', description: 'git branch name')
     }
     stages {
         stage('Build') {
