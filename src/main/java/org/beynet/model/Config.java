@@ -121,7 +121,6 @@ public class Config implements Observer {
 
     public byte[] encrypt(byte[] from) throws RuntimeException {
         try {
-            KeyGenerator keyGen = KeyGenerator.getInstance(ALGO);
             Key key = new SecretKeySpec(completeTo128Bits(password), ALGO);
             Cipher cipher = Cipher.getInstance(ALGO);
 
