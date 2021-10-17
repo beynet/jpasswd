@@ -24,6 +24,7 @@ public class PasswordGenerator {
         for (int i=0;i<26;i++) {
             LETTERS[offset+i]=(char)('a'+i);
         }
+        r.nextInt(1000);
     }
 
     /**
@@ -39,44 +40,25 @@ public class PasswordGenerator {
         if (symbols<0) throw new IllegalArgumentException("symbols must be >0");
         int letters = length-digits-symbols;
         if ((digits+symbols)>length) throw new IllegalArgumentException("symbols+numbers must be <=length");
-        StringBuilder resultLetters = new StringBuilder();
-        StringBuilder resultNumbers = new StringBuilder();
-        StringBuilder resultSymbols = new StringBuilder();
+        StringBuilder resultOrdered = new StringBuilder();
         for (int i=0;i<digits;i++) {
             int n = r.nextInt(NUMBERS.length);
-            resultNumbers.append(NUMBERS[n]);
+            resultOrdered.append(NUMBERS[n]);
         }
         for (int i=0;i<symbols;i++) {
             int n = r.nextInt(SYMBOLS.length);
-            resultSymbols.append(SYMBOLS[n]);
+            resultOrdered.append(SYMBOLS[n]);
         }
         for (int i=0;i<letters;i++) {
             int n = r.nextInt(LETTERS.length);
-            resultLetters.append(LETTERS[n]);
+            resultOrdered.append(LETTERS[n]);
         }
 
+        //generate a result not ordered from resultOrdered
         for (int i=0;i<length;i++) {
-            int typesMax = 0;
-            if (digits>0) typesMax++;
-            if (symbols>0) typesMax++;
-            if (letters>0) typesMax++;
-            int type = (typesMax!=1)?r.nextInt(typesMax):0;
-            if (type==0) {
-                if (letters>0) {
-                    result.append(resultLetters.charAt(-1+letters--));
-                } else if (digits>0) {
-                    result.append(resultNumbers.charAt(-1+digits--));
-                }
-                else {
-                    result.append(resultSymbols.charAt(-1+symbols--));
-                }
-            }
-            else if (type==1 && digits>0){
-                result.append(resultNumbers.charAt(-1+digits--));
-            }
-            else  {
-                result.append(resultSymbols.charAt(-1+symbols--));
-            }
+            int next = r.nextInt(resultOrdered.length());
+            result.append(resultOrdered.charAt(next));
+            resultOrdered.delete(next,next+1);
         }
         return result.toString();
     }
