@@ -1,6 +1,6 @@
 #!/bin/bash
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu11.45.27-ca-jdk11.0.10-macosx_x64/zulu-11.jdk/Contents/Home
-export JPACKAGE=/Library/Java/JavaVirtualMachines/jdk-14.0.1.jdk/Contents/Home/bin/jpackage
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu17.30.15-ca-jdk17.0.1-macosx_x64/zulu-17.jdk/Contents/Home
+export JPACKAGE=/Library/Java/JavaVirtualMachines/zulu17.30.15-ca-jdk17.0.1-macosx_x64/zulu-17.jdk/Contents/Home/bin/jpackage
 
 
 mvn clean package -Dmaven.test.skip=true && \
