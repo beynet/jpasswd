@@ -11,15 +11,15 @@ import java.util.function.Consumer;
  * Created by beynet on 09/11/14.
  */
 public interface PasswordOrFolderTreeNode {
-    public Node getImageView() ;
+    Node getImageView() ;
 
-    public String getText();
+    String getText();
 
-    public boolean match(Object o);
+    boolean match(Object o);
 
-    public void remove(TreeItem<PasswordOrFolderTreeNode> parent, TreeItem<PasswordOrFolderTreeNode> itemSelected);
+    void remove(TreeItem<PasswordOrFolderTreeNode> parent, TreeItem<PasswordOrFolderTreeNode> itemSelected);
 
-    public void onDoubleClick(Stage parent);
+    void onDoubleClick(Stage parent);
 
     void display(Consumer<Password> selectedPasswordChange);
 

@@ -23,7 +23,7 @@ import java.util.function.Consumer;
  * Created by beynet on 09/11/14.
  */
 public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements Observer,PasswordStoreEventVisitor {
-    private final Consumer<Password> selectedPasswordChange;
+
 
     public PasswordTree(Stage parent,Consumer<Password> selectedPasswordChange,Pane passwordContentPane) {
         final ResourceBundle labelResourceBundle = I18NHelper.getLabelResourceBundle();
@@ -241,4 +241,5 @@ public class PasswordTree extends TreeView<PasswordOrFolderTreeNode> implements 
     private TreeItem<PasswordOrFolderTreeNode> notes;
     private String filter;
     private PasswordVisitor displayer;
+    private final Consumer<Password> selectedPasswordChange;
 }
