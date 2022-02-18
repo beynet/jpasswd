@@ -9,14 +9,24 @@ import org.beynet.model.store.PasswordStore;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 
 /**
  * Created by beynet on 15/10/2014.
@@ -119,10 +129,28 @@ public class Config implements Observer {
         return bos.toByteArray();
     }
 
-    public byte[] encrypt(byte[] from) throws RuntimeException {
+    public  SecretKey getSecretKeyFromPasswordAndSalt(String password, String salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        //if (secret!=null) return secret;
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), 65536, 256);
+        return new SecretKeySpec(factory.generateSecret(spec)
+            .getEncoded(), "AES");
+        //return secret;
+    }
+
+    public  IvParameterSpec generateIv() {
+        byte[] iv = new byte[16];
+        new SecureRandom().nextBytes(iv);
+        return generateIvFromBytes(iv);
+    }
+    public IvParameterSpec generateIvFromBytes(byte[] bytes) {
+        return new IvParameterSpec(bytes);
+    }
+
+    public byte[] encrypt_old(byte[] from) throws RuntimeException {
         try {
-            Key key = new SecretKeySpec(completeTo128Bits(password), ALGO);
-            Cipher cipher = Cipher.getInstance(ALGO);
+            Key key = new SecretKeySpec(completeTo128Bits(password), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
 
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] encrypted = cipher.doFinal(from);
@@ -132,12 +160,33 @@ public class Config implements Observer {
             throw new RuntimeException("unable to encrypt",e);
         }
     }
+    public byte[] encrypt(byte[] from) throws RuntimeException {
+        try {
+            Key key = getSecretKeyFromPasswordAndSalt(password,"this is the salt");
+            Cipher cipher = Cipher.getInstance(ALGO);
+            IvParameterSpec ivParameterSpec = generateIv();
+            cipher.init(Cipher.ENCRYPT_MODE, key,ivParameterSpec);
+            byte[] encrypted = cipher.doFinal(from);
+            byte[] iv = ivParameterSpec.getIV();
+            int size = Integer.BYTES+iv.length+encrypted.length;
+            byte[] result = new byte[size];
+            ByteBuffer buf = ByteBuffer.allocateDirect(size);
+            buf.putInt(iv.length);
+            buf.put(iv);
+            buf.put(encrypted);
+            buf.rewind();
+            buf.get(result);
+            return result;
+        } catch(Exception e) {
+            throw new RuntimeException("unable to encrypt",e);
+        }
+    }
 
-    public byte[] decrypt(byte[] from) throws RuntimeException, MainPasswordError {
+    public byte[] decrypt_old(byte[] from) throws RuntimeException, MainPasswordError {
         final Cipher cipher;
         try {
-            Key key = new SecretKeySpec(completeTo128Bits(password), ALGO);
-            cipher = Cipher.getInstance(ALGO);
+            Key key = new SecretKeySpec(completeTo128Bits(password), "AES");
+            cipher = Cipher.getInstance("AES");
 
             cipher.init(Cipher.DECRYPT_MODE, key);
         }catch(Exception e) {
@@ -149,6 +198,35 @@ public class Config implements Observer {
             throw new MainPasswordError("error accessing database");
         }
     }
+
+    public byte[] decrypt(byte[] from) throws RuntimeException, MainPasswordError {
+        final Cipher cipher;
+        byte[] toDecrypt;
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(from.length);
+            buffer.put(from);
+            buffer.rewind();
+            int l = buffer.getInt();
+            byte[] ivBytes = new byte[l];
+            toDecrypt = new byte[from.length-Integer.BYTES-l];
+            buffer.get(ivBytes);
+            buffer.get(toDecrypt);
+            Key key = getSecretKeyFromPasswordAndSalt(password,"this is the salt");
+            cipher = Cipher.getInstance(ALGO);
+
+            cipher.init(Cipher.DECRYPT_MODE, key,generateIvFromBytes(ivBytes));
+        }catch(Exception e) {
+            return decrypt_old(from);
+            //throw new RuntimeException("unable to decrypt - configuration error ?",e);
+        }
+        try {
+            return cipher.doFinal(toDecrypt);
+        } catch (Exception e) {
+            return decrypt_old(from);
+            //throw new MainPasswordError("error accessing database");
+        }
+    }
+
 
     public void changeMainPassword(String password) {
         this.password=password;
@@ -173,11 +251,13 @@ public class Config implements Observer {
 
 
     private  static  Config _instance  = null ;
+    private SecretKey secret=null;
+    private IvParameterSpec IV=null;
     private final PasswordStore store;
     private Path savePath;
     private Path saveFile;
     private String password;
-    private static final String ALGO  = "AES";
+    private static final String ALGO  = "AES/CBC/PKCS5Padding";
 
     public static final String APPLICATION_DEFAULT_FILE_NAME = "jpasswd.dat";
 
