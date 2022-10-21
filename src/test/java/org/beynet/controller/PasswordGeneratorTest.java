@@ -52,9 +52,9 @@ public class PasswordGeneratorTest {
 
     @Test
     public void chars() {
-        Integer max = Integer.valueOf(10);
+        Integer max = Integer.valueOf(20);
         Integer expectedNumber = Integer.valueOf(2);
-        Integer expectedSymbols = Integer.valueOf(3);
+        Integer expectedSymbols = Integer.valueOf(2);
         for (int i=0;i<1000;i++) {
             check(max,expectedNumber, expectedSymbols);
         }
