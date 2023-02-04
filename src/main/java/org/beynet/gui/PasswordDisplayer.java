@@ -94,6 +94,14 @@ public class PasswordDisplayer implements PasswordVisitor {
         pane.add(password,1,2);
         pane.add(toggleDisplay,2,2);
 
+
+        Label additionalInfoLabel = new Label(labelResourceBundle.getString("info"));
+        TextFieldWithShortcuts addInfo = new TextFieldWithShortcuts(t.getAdditionalInfo());
+        addInfo.setEditable(false);
+        pane.add(additionalInfoLabel,0,3);
+        pane.add(addInfo,1,3);
+
+
     }
 
     @Override

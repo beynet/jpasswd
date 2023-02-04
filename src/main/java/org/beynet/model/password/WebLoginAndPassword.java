@@ -22,7 +22,7 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
     private WebLoginAndPassword() {
 
     }
-    public WebLoginAndPassword(URI uri,String login,String password) throws IllegalArgumentException {
+    public WebLoginAndPassword(URI uri,String login,String password,String additionalInfo) throws IllegalArgumentException {
         super();
         if (uri==null) throw new IllegalArgumentException("uri must not be null");
         if (login==null) throw new IllegalArgumentException("login must not be null");
@@ -30,8 +30,9 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         this.uri      = uri ;
         this.login    = login ;
         this.password = new PasswordString(password);
+        this.additionalInfo = additionalInfo;
     }
-    protected WebLoginAndPassword(String id,URI uri,String login,String password) throws IllegalArgumentException {
+    protected WebLoginAndPassword(String id,URI uri,String login,String password,String additionalInfo) throws IllegalArgumentException {
         super(id);
         if (uri==null) throw new IllegalArgumentException("uri must not be null");
         if (login==null) throw new IllegalArgumentException("login must not be null");
@@ -39,6 +40,7 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         this.uri      = uri ;
         this.login    = login ;
         this.password = new PasswordString(password);
+        this.additionalInfo = additionalInfo;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         if (newValues==null) throw new IllegalArgumentException("new password must not be null");
         if (!newValues.getClass().equals(this.getClass())) throw new IllegalArgumentException("class mismatch");
         WebLoginAndPassword newV = (WebLoginAndPassword)newValues;
-        return new WebLoginAndPassword(this.getId(),newV.getUri(),newV.getLogin(),newV.getPassword().getPassword());
+        return new WebLoginAndPassword(this.getId(),newV.getUri(),newV.getLogin(),newV.getPassword().getPassword(),newV.getAdditionalInfo());
     }
 
     @Override
@@ -60,6 +62,7 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         if (login != null ? !login.equals(that.login) : that.login != null) return false;
         if (password != null ? !password.equals(that.password) : that.password != null) return false;
         if (uri != null ? !uri.equals(that.uri) : that.uri != null) return false;
+        if (additionalInfo != null ? !additionalInfo.equals(that.additionalInfo) : that.additionalInfo != null) return false;
 
         return true;
     }
@@ -70,6 +73,8 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         result = 31 * result + (uri != null ? uri.hashCode() : 0);
         result = 31 * result + (login != null ? login.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (additionalInfo != null ? additionalInfo.hashCode() : 0);
+
         return result;
     }
 
@@ -108,6 +113,11 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         StringBuilder sb = new StringBuilder(login);
         sb.append(" ");
         sb.append(getUri().toString());
+
+        if (getAdditionalInfo()!=null && !"".equals(getAdditionalInfo())) {
+            sb.append(" ");
+            sb.append(getAdditionalInfo());
+        }
         Field txtField = new TextField(FIELD_TXT, sb.toString(), Field.Store.YES);
 
         Document document = new Document();
@@ -130,7 +140,12 @@ public class WebLoginAndPassword extends AbstractPassword implements Password {
         return password;
     }
 
-    private  URI            uri;
-    private  String         login;
-    private  PasswordString password;
+    public String getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    private  URI            uri            ;
+    private  String         login          ;
+    private  PasswordString password       ;
+    private  String         additionalInfo ;
 }

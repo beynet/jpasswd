@@ -32,13 +32,16 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         Text loginL    = new Text(labelResourceBundle.getString("login"));
         Text passwordL = new Text(labelResourceBundle.getString("password"));
         Text uriL      = new Text(labelResourceBundle.getString("uri"));
+        Text infoL      = new Text(labelResourceBundle.getString("info"));
         Text confirmL   = new Text(labelResourceBundle.getString("save"));
 
 
         final String loginMessage =labelResourceBundle.getString("login");
         final String passwordMessage =labelResourceBundle.getString("password");
         final String uriMessage=labelResourceBundle.getString("uri");
+        final String infoMessage=labelResourceBundle.getString("info");
         TextField login=new TextFieldWithShortcuts();
+
 
         login.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         login.setPromptText(loginMessage);
@@ -54,10 +57,15 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         uri.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
         uri.setPromptText(uriMessage);
 
+        TextField additionalInfo=new TextFieldWithShortcuts();
+        additionalInfo.setMinWidth(loginL.getLayoutBounds().getWidth()*5);
+        additionalInfo.setPromptText(infoMessage);
+
         if (this.password!=null) {
             uri.setText(this.password.getUri().toString());
             currentPasswordValue=this.password.getPassword().getPassword();
             login.setText(this.password.getLogin());
+            additionalInfo.setText(this.password.getAdditionalInfo());
         }
 
         passwordT.focusedProperty().addListener((obs,prev,curr)->{
@@ -98,7 +106,7 @@ public class CreateOrModifyWebSitePassword extends Dialog {
                 return;
             }
 
-            WebLoginAndPassword newP = new WebLoginAndPassword(uriCreated,login.getText(),currentPasswordValue);
+            WebLoginAndPassword newP = new WebLoginAndPassword(uriCreated,login.getText(),currentPasswordValue,additionalInfo.getText());
             Controller.notifyPasswordModified(this.password,newP);
             close();
         });
@@ -116,8 +124,10 @@ public class CreateOrModifyWebSitePassword extends Dialog {
         grid.add(passwordT,3,0);
         grid.add(uriL,0,1);
         grid.add(uri,1,1,3,1);
+        grid.add(infoL,0,2);
+        grid.add(additionalInfo,1,2,3,1);
 
-        grid.add(confirm,2,2);
+        grid.add(confirm,2,3);
 
         getRootGroup().getChildren().add(grid);
     }

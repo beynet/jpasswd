@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * Created by beynet on 15/10/2014.
@@ -20,7 +20,7 @@ import static org.junit.Assert.assertThat;
 public class PasswordStoreTest extends RootTest {
 
     private Password createTestPassword() {
-        return new WebLoginAndPassword(URI.create("http://fake-uri.fake"),"login","password");
+        return new WebLoginAndPassword(URI.create("http://fake-uri.fake"),"login","password","more info");
     }
 
     private PasswordStore writeAndReload(PasswordStore s) throws IOException, ClassNotFoundException, MainPasswordError {
@@ -61,7 +61,7 @@ public class PasswordStoreTest extends RootTest {
 
         s1.merge(writeAndReload(s2));
 
-        assertThat(s1.passwords.get(p3.getId()),notNullValue());
+        assertNotNull(s1.passwords.get(p3.getId()));
     }
 
     @Test
@@ -81,15 +81,15 @@ public class PasswordStoreTest extends RootTest {
         s2.savePassword(p2);
 
 
-        p2 = new WebLoginAndPassword(p2.getUri(),p2.getLogin(),"newpassword");
+        p2 = (WebLoginAndPassword) p2.refresh(new WebLoginAndPassword(p2.getUri(),p2.getLogin(),"newpassword","new additional info"));
         s2.savePassword(p2);
 
 
         s1.merge(writeAndReload(s2));
 
         final Password actual = s1.passwords.get(p2.getId());
-        assertThat(actual, notNullValue());
-        assertThat(actual,is(p2));
+        assertNotNull(actual);
+        assertEquals(p2,actual);
     }
 
     @Test
@@ -111,15 +111,15 @@ public class PasswordStoreTest extends RootTest {
         s2.savePassword(p2);
 
 
-        p2 = new WebLoginAndPassword(p2.getUri(),p2.getLogin(),"newpassword");
+        p2 = (WebLoginAndPassword) p2.refresh(new WebLoginAndPassword(p2.getUri(),p2.getLogin(),"newpassword","new additional after modification"));
         s1.savePassword(p2);
 
 
         s1.merge(writeAndReload(s2));
 
         final Password actual = s1.passwords.get(p2.getId());
-        assertThat(actual,notNullValue());
-        assertThat(actual,is(p2));
+        assertNotNull(actual);
+        assertEquals(p2,actual);
     }
 
 
@@ -127,25 +127,29 @@ public class PasswordStoreTest extends RootTest {
     public void search() throws IOException, ClassNotFoundException, MainPasswordError {
         PasswordStore s1 = new PasswordStore(Files.createTempFile("tmp", ".dat"));
 
-        WebLoginAndPassword p1 = new WebLoginAndPassword(URI.create("http://www.google.fr"),"testeur","password");
-        WebLoginAndPassword p2 = new WebLoginAndPassword(URI.create("http://www.fresnes.info"),"testeur","password2");
+        WebLoginAndPassword p1 = new WebLoginAndPassword(URI.create("http://www.google.fr"),"testeur","password","add on seach xziup");
+        WebLoginAndPassword p2 = new WebLoginAndPassword(URI.create("http://www.fresnes.info"),"testeur","password2",null);
 
         s1.savePassword(p1);
         s1.savePassword(p2);
 
         Map<String,Password> results = s1.search("google");
-        assertThat(Integer.valueOf(results.size()), is(Integer.valueOf(1)));
-        assertThat(results.get(p1.getId()), is(p1));
+        assertEquals(Integer.valueOf(1),Integer.valueOf(results.size()));
+        assertEquals(p1,results.get(p1.getId()));
 
         results = s1.search("fresnes");
-        assertThat(Integer.valueOf(results.size()), is(Integer.valueOf(1)));
-        assertThat(results.get(p2.getId()),is(p2));
+        assertEquals(Integer.valueOf(1),Integer.valueOf(results.size()));
+        assertEquals(p2,results.get(p2.getId()));
+
+        results = s1.search("xziup");
+        assertEquals(Integer.valueOf(1),Integer.valueOf(results.size()));
+        assertEquals(p1,results.get(p1.getId()));
 
 
         results = s1.search("testeur");
-        assertThat(Integer.valueOf(results.size()), is(Integer.valueOf(2)));
-        assertThat(results.containsKey(p1.getId()),is(Boolean.TRUE));
-        assertThat(results.containsKey(p2.getId()),is(Boolean.TRUE));
+        assertEquals(Integer.valueOf(2),Integer.valueOf(results.size()));
+        assertTrue(results.containsKey(p1.getId()));
+        assertTrue(results.containsKey(p2.getId()));
 
     }
 
@@ -157,8 +161,8 @@ public class PasswordStoreTest extends RootTest {
         Path expectedBackupFile = s1.getExpectedBackupPath();
         assertThat(expectedBackupFile,not(equalTo(s1.storePath)));
 
-        WebLoginAndPassword p1 = new WebLoginAndPassword(URI.create("http://www.google.fr"),"testeur","password");
-        WebLoginAndPassword p2 = new WebLoginAndPassword(URI.create("http://www.fresnes.info"),"testeur","password2");
+        WebLoginAndPassword p1 = new WebLoginAndPassword(URI.create("http://www.google.fr"),"testeur","password",null);
+        WebLoginAndPassword p2 = new WebLoginAndPassword(URI.create("http://www.fresnes.info"),"testeur","password2","add on");
 
         s1.savePassword(p1);
         s1.save();
